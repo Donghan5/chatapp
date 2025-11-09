@@ -1,0 +1,12 @@
+{
+	"name": "chat-app",
+	"version": "1.0.0",
+	"description": "A chat application",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo 'Just a place holder for tests' && exit 0"
+	},
+	"keywords": [],
+	"author": "Donghan KIM",
+	"license": "MIT"
+}
