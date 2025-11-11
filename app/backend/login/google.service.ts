@@ -1,34 +1,35 @@
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { User } from '@chatapp/common-types';
-import { insertGoogleUser, dbFindById } from '../database/database';
-
+import { insertGoogleUser, dbFindById, dbFindByEmail } from '../database/database';
 // Here db import
 
 class GoogleService {
-	public static async handleGoogleLogin(token: any) {
-		const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
+	public static async handleGoogleLogin(idToken: any) {
+		const ticket = await client.verifyIdToken({
+			idToken: idToken,
+			audience: process.env.GOOGLE_CLIENT_ID,
 		});
 
-		if (!response.ok) {
-			const errorBody = await response.text();
-			console.error('Error fetching user info from Google:', errorBody);
-			throw new Error('Failed to fetch user info from Google');
+		const payload = ticket.getPayload();
+
+		if (!payload) {
+			throw new Error('Invalid Google token payload');
+		}
+		
+		const userName = payload.name || payload.email.split('@')[0];
+		const userEmail = payload.email;
+		const userPicture = payload.picture;
+
+		if (!userEmail) {
+			throw new Error('Email not found in Google token');
 		}
 
-		const googleUser = await response.json();
-		const userName = googleUser.name || googleUser.email.split('@')[0];
-		const userEmail = googleUser.email;
-		const userPicture = googleUser.picture;
-
-		let user: User /* | undefined = await dbGet() */;
+		let user: User | undefined = await dbFindByEmail(userEmail);
 
 		if (!user) {
 			console.log('Creating new user in the database');
-			const result = await insertGoogleUser(userName, userEmail, userPicture);
-			user = await dbFindById(result.insertedId);
+			user = await insertGoogleUser(userName, userEmail, userPicture);
 		}
 
 		if (!user) {
@@ -36,7 +37,7 @@ class GoogleService {
 		}
 
 		const secret = process.env.JWT_SECRET || 'default_secret';
-		const jwtToken = jwt.sign(
+		const ourJwtToken = jwt.sign(
 			{
 				id: user.id,
 				name: user.name,
@@ -44,9 +45,10 @@ class GoogleService {
 				picture: user.picture,
 				profileCompleted: user.profileCompleted,
 			},
+			secret,
+			{ expiresIn: '24h' }
 		);
 
-		const ourJwtToken = jwt.sign(jwtToken, secret, { expiresIn: '24h' });
 		return ourJwtToken;
 	}
 }
