@@ -3,10 +3,20 @@
 	"version": "1.0.0",
 	"description": "A chat application",
 	"main": "index.js",
+	"private": true,
+	"workspaces": [
+		"app/frontend",
+		"app/backend",
+		"packages/common-types"
+	],
 	"scripts": {
 		"test": "echo 'Just a place holder for tests' && exit 0"
 	},
 	"keywords": [],
 	"author": "Donghan KIM",
-	"license": "MIT"
+	"license": "MIT",
+	"devDependencies": {
+		"@types/react": "^19.2.4",
+		"@types/react-dom": "^19.2.3"
+	}
 }
