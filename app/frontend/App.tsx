@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, FromEvent } from 'react';
-import LocalAuth from './services/login/local/local.client';
-import GoogleAuth from './services/login/google/google.client';
+import React, { useState, useEffect, useRef } from 'react';
+import LocalAuth from './services/login/local/index';
+import GoogleAuth from './services/login/google/index';
 import ChatLayout from './services/chat/chat';
 import { User } from '../../packages/common-types/src/user';
 

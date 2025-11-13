@@ -1,44 +1,35 @@
-import GoogleLoginButton from "./index";
+import React from 'react';
+import { GoogleLogin, GoogleOAuthProvider, CredentialResponse } from '@react-oauth/google';
 
-const LoginPage = () => {
+interface GoogleLoginButtonProps {
+  onSuccess: (credentialResponse: CredentialResponse) => void;
+  onFailure: () => void;
+}
 
-	const handleGoogleLoginSuccess = async (credentialResponse: any) => {
-		const googleToken = credentialResponse.credential;
-		console.log('Google login successful, token:', googleToken);
+const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
-		try {
-			const response = await fetch('/api/google/verify', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ token: googleToken }),
-			});
+if (!clientId) {
+  console.error("Not set Google Client ID (REACT_APP_GOOGLE_CLIENT_ID)");
+}
 
-			const data = await response.json();
+export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onSuccess, onFailure }) => {
 
-			if (data.success) {
-				localStorage.setItem('jwtToken', data.token);
-				window.location.href = '/dashboard';
-			} else {
-				throw new Error(data.error || 'Google login failed');
-			}
-		} catch (error) {
-			console.error('Error verifying Google token:', error);
-		}
-	};
-		const handleGoogleLoginFailure = () => {
-		console.error('Google login failed');
-	};
+  if (!clientId) {
+    return <div style={{ color: 'crimson' }}>Google Client ID가 설정되지 않았습니다.</div>;
+  }
 
-	return (
-		<>
-			<GoogleLoginButton
-				onSuccess={handleGoogleLoginSuccess}
-				onFailure={handleGoogleLoginFailure}
-			/>
-		</>
-	);
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <GoogleLogin
+        onSuccess={onSuccess}
+        onError={() => {
+          console.error('GoogleLogin component reported an error.');
+          onFailure(); // props로 받은 핸들러 연결
+        }}
+      />
+    </GoogleOAuthProvider>
+  );
 };
 
-export default LoginPage;
+// 3. 기존의 default export (LoginPage) 제거
+// export default LoginPage;
