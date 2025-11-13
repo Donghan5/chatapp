@@ -1,12 +1,14 @@
 {
-	"name": "@chatapp/common-types",
-	"version": "1.0.0",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "tsc --build"
-	},
-	"devDependencies": {
-		"typescript": "^5.0.0"
-	}
+  "name": "@chatapp/common-types",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
 }

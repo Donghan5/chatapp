@@ -7,6 +7,9 @@ RUN npm install
 
 COPY . .
 
+
+WORKDIR /usr/src/app/app/backend
+
 RUN npm run build
 
 EXPOSE 3000

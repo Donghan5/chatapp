@@ -8,11 +8,11 @@ check-env:
 
 build-backend:
 	@echo "🚢 Build backend image..."
-	docker build -t backend-image:latest ./app/backend
+	docker build -t backend-image:latest -f ./app/backend/Dockerfile .
 
 build-frontend:
 	@echo "🚢 Build frontend (Nginx) image..."
-	docker build -t frontend-image:latest ./app/frontend
+	docker build -t frontend-image:latest -f ./app/frontend/Dockerfile .
 
 build: build-backend build-frontend
 
