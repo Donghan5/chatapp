@@ -6,16 +6,12 @@
 
 set -e
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-# Assume project root is one level up (parent of 'local_build')
-PROJECT_ROOT=$( dirname "$SCRIPT_DIR" )
+#echo "--- Starting Node.js Backend (API) on http://localhost:3000 ---"
+#./run_backend.sh &
 
-echo "--- Changing to Project Root ($PROJECT_ROOT) ---"
-cd "$PROJECT_ROOT"
+#echo "--- Starting Python Server (Frontend) on http://localhost:8080 ---"
+#python3 serve_static.py 8080 ../app/frontend/dist &
 
-echo "===== STAGE 1: BUILDING ALL PROJECTS ====="
-./build.sh
-
-echo "\n===== STAGE 2: SERVING STATIC FRONTEND FILES WITH PYTHON ====="
-# This serves the *frontend's build output* directory on port 8080
-python3 serve_static.py 8080 ./app/frontend/dist
+echo "\n--- Both servers are running in the background. ---"
+echo "Press 'fg' and then Ctrl+C to stop them, or use 'kill %1 %2'."
+wait

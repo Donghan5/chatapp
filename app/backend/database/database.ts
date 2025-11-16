@@ -30,7 +30,7 @@ export async function initializeSchema() {
 }
 
 /* Execute a database query */
-export async function runDatabase(query: string, params: any[] = []): Promise<QueryResult> {
+export async function runDatabase(query: string, params: any[] = []): Promise<any[]> {
 	try {
 		const result: QueryResult = await pool.query(query, params);
 		return result.rows;

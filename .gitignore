@@ -2,3 +2,8 @@
 app/frontend/node_modules
 app/backend/node_modules
 node_modules
+app/frontend/dist
+app/backend/dist
+dist
+app/frontend/.env
+app/backend/.env

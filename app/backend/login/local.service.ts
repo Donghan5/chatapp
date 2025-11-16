@@ -13,15 +13,17 @@ class LocalService {
 			throw new Error('User not found');
 		}
 
-		const isPasswordValid = await bcrypt.compare(password, user.password);
+		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 		if (!isPasswordValid) {
 			throw new Error('Invalid password');
 		}
 
+		const { password_hash, ...safeUser } = user;
+
 		const secret = process.env.JWT_SECRET_KEY || 'default_secret';
 		const token = jwt.sign({ id: user.id }, secret, { expiresIn: '1h' });
 
-		return { token };
+		return { token, user: safeUser };
 	}
 
 	public static async handleLocalRegister(name: string, email: string, password: string) {

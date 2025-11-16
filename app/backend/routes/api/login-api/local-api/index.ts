@@ -1,9 +1,10 @@
 // This is the entry point for the local login API
+import { FastifyInstance } from 'fastify';
 import fastify from 'fastify';
 import { LocalService } from '../../../../login/local.service';
 
-export default async function localApiRoute(app: fastify.FastifyInstance) {
-	fastify.post('/register', async (request: any, reply: any) => {
+export default async function localApiRoute(app: FastifyInstance) {
+	app.post('/register', async (request: any, reply: any) => {
 		try {
 			const { nickname, email, password, confirmPassword } = request.body;
 
@@ -46,7 +47,7 @@ export default async function localApiRoute(app: fastify.FastifyInstance) {
 		}
 	});
 
-	fastify.post('/login', async (request: any, reply: any) => {
+	app.post('/login', async (request: any, reply: any) => {
 		try {
 			const { email, password } = request.body;
 

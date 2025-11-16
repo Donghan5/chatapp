@@ -3,7 +3,7 @@ import kafka from './kafka';
 
 const KAFKA_TOPIC = 'chat-messages';
 
-export const wss = new WebSocketServer({ port: 8080 });
+export const wss = new WebSocketServer({ port: 5173 });
 
 const rooms = new Map<string, Set<WebSocket>>();
 
@@ -88,7 +88,7 @@ const runConsumer = async () => {
 
 const startWebSocketServer = async () => {
 	await producer.connect();
-	console.log('WebSocket server started on ws://localhost:8080');
+	console.log('WebSocket server started on ws://localhost:5173');
 
 	wss.on('connection', (ws: WebSocket) => {
 		console.log('New client connected');

@@ -17,7 +17,7 @@ echo "--- 1. Installing Monorepo Dependencies ---"
 npm install
 
 echo "--- 2. Building 'common-types' Workspace ---"
-npm run build -w common-types
+npm run build -w @chatapp/common-types
 
 echo "--- 3. Building 'backend' Workspace ---"
 npm run build -w backend

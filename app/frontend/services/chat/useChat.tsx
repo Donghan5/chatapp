@@ -15,7 +15,7 @@ export default function useChat(user: User, roomId: string) {
 	const ws = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const socket = new WebSocket('ws://localhost:8080');
+		const socket = new WebSocket('ws://localhost:3000');
 		ws.current = socket;
 
 		socket.onopen = () => {

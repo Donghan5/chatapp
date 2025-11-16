@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '@chatapp/common-types';
 import { insertGoogleUser, dbFindById, dbFindByEmail } from '../database/database';
-// Here db import
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class GoogleService {
 	public static async handleGoogleLogin(idToken: any) {
@@ -17,7 +18,7 @@ class GoogleService {
 			throw new Error('Invalid Google token payload');
 		}
 		
-		const userName = payload.name || payload.email.split('@')[0];
+		const userName = payload.name;
 		const userEmail = payload.email;
 		const userPicture = payload.picture;
 
@@ -29,7 +30,7 @@ class GoogleService {
 
 		if (!user) {
 			console.log('Creating new user in the database');
-			user = await insertGoogleUser(userName, userEmail, userPicture);
+			user = await insertGoogleUser(userName!, userEmail, userPicture!);
 		}
 
 		if (!user) {

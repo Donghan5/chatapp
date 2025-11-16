@@ -1,10 +1,9 @@
-# Dockerfile for a PostgreSQL database (based on the official image)
 FROM postgres:15-alpine
 
-ENV PGDATA=/var/lib/postgresql/data/pgdata
+COPY ./migration/*.sql /docker-entrypoint-initdb.d/
 
-COPY ./migration/001_create_users_table.sql /docker-entrypoint-initdb.d/001_create_users_table.sql
-RUN chmod -R 755 /docker-entrypoint-initdb.d || true
+RUN chmod -R 755 /docker-entrypoint-initdb.d || \
+true
 
 EXPOSE 5432
 
