@@ -36,7 +36,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
     }
 
     try {
-      const response = await fetch('/api/google/verify', {
+      const response = await fetch('/api/auth/google/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

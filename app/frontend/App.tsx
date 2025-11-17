@@ -1,36 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
-import LocalAuth from './services/login/local/index';
-import GoogleAuth from './services/login/google/index';
-import ChatLayout from './services/chat/chat';
-import { User } from '../../packages/common-types/src/user';
+import React, { useState } from 'react';
+import LandingPage from './services/landing/index';
+import Login from './services/login/login';
+import Dashboard from './services/dashboard/index';
+import { User } from '../../packages/common-types/src/user'; 
+
+type ViewState = 'landing' | 'login' | 'dashboard' | 'logout' | 'chat';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+    const [currentView, setCurrentView] = useState<ViewState>('landing');
+    
+    const [user, setUser] = useState<User | null>(null);
 
-  const handleLoginSuccess = (loggedInUser: User) => {
-    setUser(loggedInUser);
-  };
+    const handleStart = () => {
+        setCurrentView('login');
+    };
 
-	if (!user) {
-		return (
-		<div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-			<div className="bg-whatsapp-green p-6">
-				<h1 className="text-3xl font-bold text-white text-center">
-          			Welcome to ChatApp
-        		</h1>
-			<LocalAuth onSuccess={handleLoginSuccess} />
+    const handleLoginSuccess = (loggedInUser: User) => {
+        setUser(loggedInUser);
+        setCurrentView('dashboard');
+    };
 
-			<div className="p-8">
-				<p className="mx-4 text-center text-sm text-gray-500">OR</p>
-			</div>
+    const handleLogout = () => {
+        setUser(null);
+        localStorage.removeItem('jwtToken');
+        setCurrentView('login'); 
+    };
 
-			<GoogleAuth onSuccess={handleLoginSuccess} />
-			</div>
-		</div>
-		);
-	}
 
-  return <ChatLayout user={user} />;
+    if (user && currentView === 'dashboard') {
+        return <Dashboard user={user} onLogout={handleLogout} />;
+    }
+
+    if (currentView === 'login') {
+        return <Login onSuccess={handleLoginSuccess} />;
+    }
+
+    return <LandingPage onStart={handleStart} />;
 }
-
-export { App };

@@ -45,7 +45,11 @@ class LocalService {
 		const hashedPassword = await bcrypt.hash(password, 12);
 
 		const newUser = await insertLocalUser(name, email, hashedPassword);
-		return newUser;
+		const secret = process.env.jwt_SECRET_KEY || 'default_secret';
+		const token = jwt.sign({ id: newUser.id }, secret, { expiresIn: '1h' });
+
+		const { password_hash, ...safeUser } = newUser;
+		return { token, user: safeUser };
 	}
 }
 

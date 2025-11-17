@@ -31,13 +31,13 @@ export default async function localApiRoute(app: FastifyInstance) {
 				return reply.status(400).send({ error: 'Invalid email format' });
 			}
 
-			const token = await LocalService.handleLocalRegister(nickname, email, password);
+			const { token } = await LocalService.handleLocalRegister(nickname, email, password);
 
 
 			return reply.send({
 				success: true,
 				message: 'User registered successfully',
-				requiresLogin: true
+				token: token
 			});
 		}
 		catch (error) {

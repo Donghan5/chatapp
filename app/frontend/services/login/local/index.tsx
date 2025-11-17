@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LoginForm } from "./local.client";
-import { RegisterForm } from "./local.client";
+import { RegisterForm } from "./local.register";
 import { User } from "@chatapp/common-types/src/user";
 
 interface LocalAuthProps {
