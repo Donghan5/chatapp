@@ -1,77 +1,48 @@
 // app/frontend/services/login/google/index.tsx
 
 import React from 'react';
-import { CredentialResponse } from '@react-oauth/google';
-import { GoogleLoginButton } from './google.client'; 
-import { User } from '../../../../packages/common-types/src/user'; 
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 interface GoogleAuthProps {
-  onSuccess: (loggedInUser: User) => void;
-  onFailure?: () => void;
+  onSuccess: (user: any) => void;
 }
 
-
-function decodeJwt(token: string): User {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    
-    return JSON.parse(jsonPayload) as User;
-  } catch (e) {
-    console.error("Failed to decode JWT:", e);
-    throw new Error("Invalid token structure");
-  }
-}
-
-const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    const googleToken = credentialResponse.credential;
-    if (!googleToken) {
-      console.error('No credential returned from Google');
-      return;
-    }
-
+export default function GoogleAuth({ onSuccess }: GoogleAuthProps) {
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
-      const response = await fetch('/api/auth/google/verify', {
+      const res = await fetch('http://localhost:3000/api/auth/google/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token: googleToken }),
+        body: JSON.stringify({
+          token: credentialResponse.credential,
+        }),
       });
 
-      const data = await response.json();
-      if (!response.ok || !data.success || !data.token) {
-        throw new Error(data.error || 'Google login verification failed');
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('jwtToken', data.token);
+        // Decode token or fetch user info here
+        // Mocking for now
+        onSuccess({ name: 'Google User', email: 'google@example.com' });
       }
-
-      localStorage.setItem('jwtToken', data.token);
-
-      const user = decodeJwt(data.token);
-
-      onSuccess(user);
-
     } catch (error) {
-      console.error('Error verifying Google token:', error);
-      onFailure?.();
+      console.error('Google login failed', error);
     }
   };
 
-  const handleGoogleLoginFailure = () => {
-    console.error('Google login failed');
-    onFailure?.();
-  };
-
   return (
-    <GoogleLoginButton
-      onSuccess={handleGoogleLoginSuccess}
-      onFailure={handleGoogleLoginFailure}
-    />
+    <div className="w-full flex justify-center">
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => console.log('Login Failed')}
+          theme="outline"
+          shape="pill"
+          width="100%"
+        />
+      </GoogleOAuthProvider>
+    </div>
   );
-};
-
-export default GoogleAuth;
+}

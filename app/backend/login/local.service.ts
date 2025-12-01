@@ -20,7 +20,7 @@ class LocalService {
 
 		const { password_hash, ...safeUser } = user;
 
-		const secret = process.env.JWT_SECRET_KEY || 'default_secret';
+		const secret = process.env.JWT_SECRET || 'default_secret';
 		const token = jwt.sign({ id: user.id }, secret, { expiresIn: '1h' });
 
 		return { token, user: safeUser };
@@ -33,19 +33,13 @@ class LocalService {
 
 		const existingUser = await dbFindByEmail(email);
 		if (existingUser) {
-			if (email == existingUser.email) {
-				throw new Error('User already exists');
-			}
-
-			if (name == existingUser.name) {
-				throw new Error('Username already taken');
-			}
+			throw new Error('User already exists');
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 12);
 
 		const newUser = await insertLocalUser(name, email, hashedPassword);
-		const secret = process.env.jwt_SECRET_KEY || 'default_secret';
+		const secret = process.env.JWT_SECRET || 'default_secret';
 		const token = jwt.sign({ id: newUser.id }, secret, { expiresIn: '1h' });
 
 		const { password_hash, ...safeUser } = newUser;

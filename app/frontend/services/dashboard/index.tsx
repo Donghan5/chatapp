@@ -23,7 +23,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col space-y-2 w-full">
           <NavIcon label="Chats" active={activeTab === 'chats'} onClick={() => setActiveTab('chats')} />
-          <NavIcon label="People" active={activeTab === 'contacts'} onClick={() => setActiveTab('contacts')} />
+          <NavIcon label="Friends" active={activeTab === 'contacts'} onClick={() => setActiveTab('contacts')} />
           <NavIcon label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </nav>
         <button onClick={onLogout} className="mt-auto p-2 hover:bg-white/10 rounded-lg transition-colors text-xs" title="Logout">

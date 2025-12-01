@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, FormEvent } from 'react';
-// implement real-time chat features here
+import React, { useState, useEffect, useRef } from 'react';
+import { User } from '../../../../packages/common-types/src/user';
 
 interface ChatMessage {
 	type: 'message';
@@ -15,7 +15,8 @@ export default function useChat(user: User, roomId: string) {
 	const ws = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const socket = new WebSocket('ws://localhost:3000');
+		// Connect to the new WebSocket route
+		const socket = new WebSocket('ws://localhost:3000/ws/chat');
 		ws.current = socket;
 
 		socket.onopen = () => {
@@ -28,10 +29,14 @@ export default function useChat(user: User, roomId: string) {
 		};
 
 		socket.onmessage = (event) => {
-			const message = JSON.parse(event.data);
+			try {
+				const message = JSON.parse(event.data);
 
-			if (message.type === 'message') {
-				setMessages((prevMessages) => [...prevMessages, message]);
+				if (message.type === 'message') {
+					setMessages((prevMessages) => [...prevMessages, message]);
+				}
+			} catch (e) {
+				console.error('Failed to parse message', e);
 			}
 		};
 
@@ -56,9 +61,12 @@ export default function useChat(user: User, roomId: string) {
 		const messagePayload: ChatMessage = {
 			type: 'message',
 			roomId: roomId,
-			senderId: user.id,
+			senderId: Number(user.id), // Ensure ID is number if backend expects it, or string if consistent
 			content: content
 		};
+
+		// Optimistic update
+		// setMessages((prev) => [...prev, messagePayload]);
 
 		ws.current.send(JSON.stringify(messagePayload));
 	}

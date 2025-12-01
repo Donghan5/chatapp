@@ -30,13 +30,28 @@ export async function initializeSchema() {
 }
 
 /* Execute a database query */
-export async function runDatabase(query: string, params: any[] = []): Promise<any[]> {
+export async function runDatabase(query: string, params: any[] = [], client?: PoolClient): Promise<any[]> {
 	try {
 		const result: QueryResult = await pool.query(query, params);
 		return result.rows;
 	} catch (error) {
 		console.error('Error executing query:', error);
 		throw error;
+	}
+}
+
+export async function runTransaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
+	const client = await pool.connect();
+	try {
+		await client.query('BEGIN'); 
+		const result = await callback(client); 
+		await client.query('COMMIT'); 
+		return result;
+	} catch (error) {
+		await client.query('ROLLBACK'); 
+		throw error;
+	} finally {
+		client.release(); 
 	}
 }
 

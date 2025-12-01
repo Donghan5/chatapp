@@ -17,7 +17,7 @@ class GoogleService {
 		if (!payload) {
 			throw new Error('Invalid Google token payload');
 		}
-		
+
 		const userName = payload.name;
 		const userEmail = payload.email;
 		const userPicture = payload.picture;
@@ -33,6 +33,7 @@ class GoogleService {
 			user = await insertGoogleUser(userName!, userEmail, userPicture!);
 		}
 
+		// After creation of the user, verification of it
 		if (!user) {
 			throw new Error('User creation failed or User not found');
 		}
