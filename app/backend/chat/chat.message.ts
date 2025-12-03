@@ -1,22 +1,39 @@
-import { runDatabase } from "database/database";
+import { runDatabase } from '../database/database';
 
-export async function saveMessage(message: string, senderId: number, roomId: number) {
-	const query = `
-		INSERT INTO messages (content, sender_id, room_id)
-		VALUES ($1, $2, $3)
-		RETURNING *;
-	`;
-	const rows = await runDatabase(query, [message, senderId, roomId]);
-	return rows[0];
+export interface Message {
+    id: number;
+    roomId: number;
+    senderId: number;
+    content: string;
+    createdAt: Date;
 }
 
-// ordered by created_at desc
-export async function getMessages(roomId: number) {
-	const query = `
-		SELECT * FROM messages
-		WHERE room_id = $1
-		ORDER BY created_at DESC;
-	`;
-	const rows = await runDatabase(query, [roomId]);
-	return rows;
+export async function saveMessage(roomId: number, senderId: number, content: string): Promise<Message> {
+    const query = `
+        INSERT INTO messages (room_id, sender_id, content)
+        VALUES ($1, $2, $3)
+        RETURNING id, room_id as "roomId", sender_id as "senderId", content, created_at as "createdAt";
+    `;
+    const rows = await runDatabase(query, [roomId, senderId, content]);
+    return rows[0];
+}
+
+export async function getMessages(roomId: number, limit = 50): Promise<Message[]> {
+    const query = `
+        SELECT * FROM (
+            SELECT 
+                id, 
+                room_id as "roomId", 
+                sender_id as "senderId", 
+                content, 
+                created_at as "createdAt"
+            FROM messages
+            WHERE room_id = $1
+            ORDER BY created_at DESC
+            LIMIT $2
+        ) sub
+        ORDER BY "createdAt" ASC;
+    `;
+    const rows = await runDatabase(query, [roomId, limit]);
+    return rows;
 }

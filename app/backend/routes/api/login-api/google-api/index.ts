@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify';
 import { GoogleService } from '../../../../login/google.service';
 
 export default async function googleApiRoute(app: FastifyInstance) {
-	app.post('/verify', async (request, reply) => {
+	app.post('/login', async (request, reply) => {
 		try {
 			const { token } = request.body as { token: string };
 

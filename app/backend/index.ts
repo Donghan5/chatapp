@@ -4,6 +4,7 @@ import websocket from '@fastify/websocket';
 import localApiRoute from './routes/api/login-api/local-api';
 import googleApiRoute from './routes/api/login-api/google-api';
 import chatRoute from './routes/api/chat-api/index';
+import { initializeSchema } from './database/database';
 
 const app = Fastify({ logger: true });
 
@@ -19,6 +20,8 @@ app.register(chatRoute);
 
 const start = async () => {
   try {
+    await initializeSchema();
+    
     const PORT = Number(process.env.BACKEND_PORT) || 3000;
     await app.listen({ port: PORT, host: '0.0.0.0' });
     console.log(`Server is running on http://localhost:${PORT}`);

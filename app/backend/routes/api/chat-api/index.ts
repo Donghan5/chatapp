@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 import { WebSocket } from 'ws';
 import { connectKafka, runConsumer, sendMessage } from '../../../kafka/index';
 import { chatRoomRoute } from './room';
@@ -14,35 +14,41 @@ interface ChatMessage {
 const rooms = new Map<string, Set<WebSocket>>();
 
 export default async function chatRoute(app: FastifyInstance) {
-    await connectKafka();
+    connectKafka().then(() => {
+        console.log('Connected to Kafka successfully');
 
-    await runConsumer(async (message: ChatMessage) => {
-        const { roomId, senderId, content, type } = message;
-        const clientsInRoom = rooms.get(roomId);
+        runConsumer(async (message: ChatMessage) => {
+            const { roomId, senderId, content, type } = message;
+            const clientsInRoom = rooms.get(roomId);
 
-		// save messages
-		if (type === 'message' && senderId && content) {
-			try {
-				await saveMessage(content, senderId, Number(roomId));	
-			} catch (error) {
-				console.error('Error saving message:', error);
-			}
-		}
-
-        if (clientsInRoom) {
-            const messageString = JSON.stringify(message);
-            clientsInRoom.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(messageString);
+            // save messages
+            if (type === 'message' && senderId && content) {
+                try {
+                    await saveMessage(Number(roomId), senderId, content);
+                } catch (error) {
+                    console.error('Error saving message:', error);
                 }
-            });
-        }
+            }
+
+            if (clientsInRoom) {
+                const messageString = JSON.stringify(message);
+                clientsInRoom.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(messageString);
+                    }
+                });
+            }
+        }).catch((error) => {
+            console.error('Error running Kafka consumer:', error);
+        });
     });
 
-	app.register(chatRoomRoute, { prefix: '/api/chat' });
 
-    app.get('/ws/chat', { websocket: true }, (connection, req) => {
-        const socket = connection.socket;
+    app.register(chatRoomRoute, { prefix: '/api/chat' });
+
+    // connection 타입을 any로 지정하여 SocketStream 타입을 사용하지 않음
+    app.get('/ws/chat', { websocket: true }, (connection: any, req: FastifyRequest) => {
+        const socket = connection.socket as WebSocket; // socket을 WebSocket 타입으로 단언
         let currentRoomId: string | null = null;
 
         console.log('Client connected to WebSocket');
@@ -58,12 +64,12 @@ export default async function chatRoute(app: FastifyInstance) {
                         rooms.set(currentRoomId, new Set());
                     }
                     rooms.get(currentRoomId)?.add(socket);
-                    
-                    socket.send(JSON.stringify({ 
-                        type: 'joinedRoom', 
-                        roomId: currentRoomId 
+
+                    socket.send(JSON.stringify({
+                        type: 'joinedRoom',
+                        roomId: currentRoomId
                     }));
-                    
+
                     console.log(`Client joined room: ${currentRoomId}`);
 
                 } else if (parsedMessage.type === 'message') {
@@ -87,7 +93,7 @@ export default async function chatRoute(app: FastifyInstance) {
             }
         });
 
-        socket.on('error', (err) => {
+        socket.on('error', (err: Error) => {
             console.error('WebSocket error:', err);
         });
     });

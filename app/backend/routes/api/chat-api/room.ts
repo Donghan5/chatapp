@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { createChatRoom, getChatRooms, joinChatRoom } from '../../../chat/chat.room';
 import jwt from 'jsonwebtoken';
+import { getMessages } from '../../../chat/chat.message';
 
 export function chatRoomRoute(app: FastifyInstance) {
 	const getUserFromToken = (req: any) => {
@@ -68,4 +69,20 @@ export function chatRoomRoute(app: FastifyInstance) {
 			return reply.status(500).send({ error: 'Failed to join chat room' });
 		}
 	});
+
+	app.post('/rooms/:id/message', async(req: any, reply) => {
+		const user = getUserFromToken(req);
+		if (!user) {
+			return reply.status(401).send({ error: 'Unauthorized' });
+		}
+		
+		const roomId = Number(req.params.id);
+		try {
+			const messages = await getMessages(roomId);
+			return reply.send(messages);
+		} catch (error) {
+			console.error('Error fetching messages:', error);
+			return reply.status(500).send({ error: 'Failed to fetch messages' });
+		}
+	})
 }

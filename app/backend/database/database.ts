@@ -13,7 +13,7 @@ console.log('Database pool created');
 
 /* Initialize database schema */
 export async function initializeSchema() {
-	const createTableQuery = `
+	const createUsersTable = `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR(100),
@@ -21,12 +21,50 @@ export async function initializeSchema() {
 		picture VARCHAR(255),
 		profile_completed BOOLEAN DEFAULT FALSE,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);
 	`;
+	await runDatabase(createUsersTable);
 
-	await runDatabase(createTableQuery);
-	console.log('Database schema initialized (if not exists)');
+	const createChatRoomsTable = `
+	CREATE TABLE IF NOT EXISTS chat_rooms (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255),
+		is_group_chat BOOLEAN DEFAULT FALSE NOT NULL,
+		created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`;
+	await runDatabase(createChatRoomsTable);
+
+	const createRoomParticipantsTable = `
+	CREATE TABLE IF NOT EXISTS room_participants (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		room_id INTEGER NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+		joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		last_read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (user_id, room_id)
+	);
+	`;
+	await runDatabase(createRoomParticipantsTable);
+	await runDatabase(`CREATE INDEX IF NOT EXISTS idx_room_participants_room_id ON room_participants(room_id);`);
+
+	const createMessagesTable = `
+	CREATE TABLE IF NOT EXISTS messages (
+		id BIGSERIAL PRIMARY KEY,
+		room_id INTEGER NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+		sender_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+		content TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`;
+	await runDatabase(createMessagesTable);
+	await runDatabase(`CREATE INDEX IF NOT EXISTS idx_messages_room_id ON messages (room_id);`);
+	await runDatabase(`CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages (sender_id);`);
+	await runDatabase(`CREATE INDEX IF NOT EXISTS idx_messages_created_at_desc ON messages (created_at DESC);`);
+
+	console.log('✅ Database schema initialized (all tables created)');
 }
 
 /* Execute a database query */

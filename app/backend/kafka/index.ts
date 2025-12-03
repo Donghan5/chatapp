@@ -12,15 +12,19 @@ let isConnected = false;
 
 export const connectKafka = async () => {
     if (isConnected) return;
-    
-    try {
-        await producer.connect();
-        await consumer.connect();
-        await consumer.subscribe({ topic: KAFKA_TOPIC, fromBeginning: false });
-        isConnected = true;
-        console.log('✅ Kafka connected');
-    } catch (error) {
-        console.error('❌ Error connecting to Kafka:', error);
+
+    while (!isConnected) {
+        try {
+            console.log('⏳ Trying to connect to Kafka...');
+            await producer.connect();
+            await consumer.connect();
+            await consumer.subscribe({ topic: KAFKA_TOPIC, fromBeginning: false });
+            isConnected = true;
+            console.log('✅ Kafka connected');
+        } catch (error) {
+            console.error('❌ Connection of Kafka failed. Retrying in 3 seconds...', error);
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
     }
 };
 

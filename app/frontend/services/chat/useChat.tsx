@@ -1,80 +1,103 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User } from '../../../../packages/common-types/src/user';
 
-interface ChatMessage {
-	type: 'message';
-	roomId: string;
-	senderId: number;
-	content: string;
+export interface ChatMessage {
+    id?: number;
+    type?: 'message';
+    roomId: string | number;
+    senderId: number;
+    content: string;
+    createdAt?: string;
 }
 
 export default function useChat(user: User, roomId: string) {
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
-	const [inputMessage, setInputMessage] = useState('');
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [inputMessage, setInputMessage] = useState('');
+    const [loading, setLoading] = useState(false); // Track loading state
 
-	const ws = useRef<WebSocket | null>(null);
+    const ws = useRef<WebSocket | null>(null);
 
-	useEffect(() => {
-		// Connect to the new WebSocket route
-		const socket = new WebSocket('ws://localhost:3000/ws/chat');
-		ws.current = socket;
+    useEffect(() => {
+        if (!roomId) return;
 
-		socket.onopen = () => {
-			console.log('WebSocket connected');
+        const fetchHistory = async () => {
+            setLoading(true);
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const res = await fetch(`/api/chat/rooms/${roomId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (res.ok) {
+                    const history = await res.json();
+                    setMessages(history); 
+                } else {
+                    console.error("Failed to load message history");
+                }
+            } catch (error) {
+                console.error("Error fetching history:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-			socket.send(JSON.stringify({
-				type: 'joinRoom',
-				roomId: roomId
-			}));
-		};
+        fetchHistory();
+    }, [roomId]);
 
-		socket.onmessage = (event) => {
-			try {
-				const message = JSON.parse(event.data);
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:3000/ws/chat'); // Ensure port/path is correct
+        ws.current = socket;
 
-				if (message.type === 'message') {
-					setMessages((prevMessages) => [...prevMessages, message]);
-				}
-			} catch (e) {
-				console.error('Failed to parse message', e);
-			}
-		};
+        socket.onopen = () => {
+            console.log('WebSocket connected');
+            socket.send(JSON.stringify({
+                type: 'joinRoom',
+                roomId: roomId
+            }));
+        };
 
-		socket.onclose = () => {
-			console.log('WebSocket disconnected');
-		}
+        socket.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
 
-		socket.onerror = (error) => {
-			console.error('WebSocket error:', error);
-		}
+                if (message.type === 'message' && String(message.roomId) === String(roomId)) {
+                    setMessages((prev) => {
+                        return [...prev, message];
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to parse message', e);
+            }
+        };
 
-		return () => {
-			socket.close();
-		};
-	}, [roomId]);
+        return () => {
+            socket.close();
+        };
+    }, [roomId]);
 
-	const handleSendMessage = (content: string) => {
-		if (!content.trim() || !ws.current || ws.current.readyState !== WebSocket.OPEN) {
-			return;
-		}
+    const handleSendMessage = (content: string) => {
+        if (!content.trim() || !ws.current || ws.current.readyState !== WebSocket.OPEN) {
+            return;
+        }
 
-		const messagePayload: ChatMessage = {
-			type: 'message',
-			roomId: roomId,
-			senderId: Number(user.id), // Ensure ID is number if backend expects it, or string if consistent
-			content: content
-		};
+        const messagePayload: ChatMessage = {
+            type: 'message',
+            roomId: roomId,
+            senderId: Number(user.id),
+            content: content,
+            createdAt: new Date().toISOString() // Optimistic timestamp
+        };
 
-		// Optimistic update
-		// setMessages((prev) => [...prev, messagePayload]);
+        ws.current.send(JSON.stringify(messagePayload));
+    }
 
-		ws.current.send(JSON.stringify(messagePayload));
-	}
-
-	return {
-		messages,
-		inputMessage,
-		setInputMessage,
-		handleSendMessage
-	};
+    return {
+        messages,
+        inputMessage,
+        setInputMessage,
+        handleSendMessage,
+        loading
+    };
 }

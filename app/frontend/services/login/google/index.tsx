@@ -40,7 +40,7 @@ export default function GoogleAuth({ onSuccess }: GoogleAuthProps) {
           onError={() => console.log('Login Failed')}
           theme="outline"
           shape="pill"
-          width="100%"
+          width="300%"
         />
       </GoogleOAuthProvider>
     </div>
