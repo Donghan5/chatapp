@@ -1,5 +1,7 @@
 import { Pool, PoolClient, QueryResult } from 'pg';
 import { User } from '@chatapp/common-types';
+import runner from 'node-pg-migrate';
+import path from 'path';
 
 const pool = new Pool({
 	user: process.env.DB_USER,
@@ -11,7 +13,33 @@ const pool = new Pool({
 
 console.log('Database pool created');
 
-/* Initialize database schema */
+/**
+ * Automatically run database migrations
+ */
+export async function automaticInitializeSchema() {
+	console.log('Running database migrations...');
+
+	const client = await pool.connect();
+
+	try {
+		await runner({
+			dbClient: client,
+			singleTransaction: true,
+			direction: 'up',
+			dir: path.join(__dirname, 'migration'),
+			migrationsTable: 'pgmigrations',
+		});
+		console.log('✅ Database migrations completed successfully');
+	} catch (error) {
+		console.error('❌ Error running database migrations:', error);
+	} finally {
+		client.release();
+	}
+}
+
+/* 
+**	Manually Initialize database schema
+*/
 export async function initializeSchema() {
 	const createUsersTable = `
 	CREATE TABLE IF NOT EXISTS users (
