@@ -5,6 +5,7 @@ import localApiRoute from './routes/api/login-api/local-api';
 import googleApiRoute from './routes/api/login-api/google-api';
 import chatRoute from './routes/api/chat-api/index';
 import { initializeSchema } from './database/database';
+import userApiRoute from './routes/api/user-api/index';
 
 const app = Fastify({ logger: true });
 
@@ -17,6 +18,7 @@ app.register(websocket);
 app.register(localApiRoute, { prefix: '/api/auth/local' });
 app.register(googleApiRoute, { prefix: '/api/auth/google' });
 app.register(chatRoute);
+app.register(userApiRoute, { prefix: '/api/users' });
 
 const start = async () => {
   try {

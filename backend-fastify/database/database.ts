@@ -1,6 +1,6 @@
 import { Pool, PoolClient, QueryResult } from 'pg';
 import { User } from '@chatapp/common-types';
-import runner from 'node-pg-migrate';
+import migrate from 'node-pg-migrate';
 import path from 'path';
 
 const pool = new Pool({
@@ -22,7 +22,7 @@ export async function automaticInitializeSchema() {
 	const client = await pool.connect();
 
 	try {
-		await runner({
+		await migrate({
 			dbClient: client,
 			singleTransaction: true,
 			direction: 'up',
@@ -167,4 +167,22 @@ export async function dbFindByEmail(email: string): Promise<User | undefined> {
 	const params = [email];
 	const rows = await runDatabase(query, params);
 	return rows[0];
+}
+
+export async function updateUser(id: number, name: string, status: string): Promise<User> {
+	const query = `
+		UPDATE users 
+		SET name = $2, status = $3 
+		WHERE id = $1 
+		RETURNING *;
+	`;
+	const params = [id, name, status];
+	try {
+		const rows = await runDatabase(query, params);
+		console.log('User updated with ID:', rows[0].id);
+		return rows[0];
+	} catch (error) {
+		console.error('Error updating user:', error);
+		throw error;
+	}
 }

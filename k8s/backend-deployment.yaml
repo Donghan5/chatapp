@@ -1,9 +1,9 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend-deployment
 spec:
-  replicas: 3 # Number of pod replicas
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -14,8 +14,10 @@ spec:
     spec:
       containers:
       - name: backend
-        image: my-backend-image:latest
+        image: backend-image:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
-        env:
-        
+        envFrom:
+        - secretRef:
+            name: backend-secret
