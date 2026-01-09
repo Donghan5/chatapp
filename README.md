@@ -119,7 +119,7 @@ The goal is to reach a Minimum Viable Product (MVP) with the following phases:
     - Docker & Kubernetes setup.
     - CI/CD pipeline basics (Makefile).
 
-- [ ] **Phase 2: Authentication**
+- [x] **Phase 2: Authentication**
     - Implement Google OAuth flow.
     - Secure API endpoints with JWT.
     - User session management.
@@ -143,3 +143,7 @@ The goal is to reach a Minimum Viable Product (MVP) with the following phases:
     - End-to-end testing.
     - Production build optimization.
     - Final deployment verification.
+
+## DataBase diagram
+
+![Database Diagram](./chatapp_database_schema_v2.png)
