@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from "typeorm";
 import { User } from "../users/user.entity";
-import { Message } from "../messages/message.entity";
+import { Message } from "../messages/messages.entity";
 import { RoomParticipant } from "./room-participant.entity";
 
 @Entity('chat_rooms')
@@ -11,7 +11,7 @@ export class ChatRoom {
 	@Column({ length: 255 })
 	name!: string;
 
-	@Column({ length: 255 })
+	@Column({ length: 255, nullable: true })
 	description!: string;
 
 	@Column({ name: 'is_group_chat', default: false })

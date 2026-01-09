@@ -10,6 +10,9 @@ export class RoomParticipant {
 	@PrimaryColumn({ name: 'room_id' })
 	roomId!: number;
 
+	@Column({ length: 20, default: 'user' })
+	role!: string;
+
 	@ManyToOne(() => User, (user) => user.participatingRooms, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'user_id' })
 	user: User;

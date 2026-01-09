@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LocalService } from './local.service';
  import { GoogleService } from './google.service';
 import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from 'src/users/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,23 +19,27 @@ export class AuthService {
 
 
 	async validateGoogleUser(email: string, firstName: string | undefined, lastName: string | undefined, socialId: string) {
-    const user = await this.googleService.validateUser({ 
-        email, 
-        firstName: firstName || '', 
-        lastName: lastName || '',
-        socialId 
-    });
+		const user = await this.googleService.validateUser({ 
+			email, 
+			firstName: firstName || '', 
+			lastName: lastName || '',
+			socialId 
+		});
 
-    if (!user) {
-        throw new UnauthorizedException('Invalid google user');
-    }
+		if (!user) {
+			throw new UnauthorizedException('Invalid google user');
+		}
 
-    return user;
-}
+		return user;
+	}
+
 	async login(user: any) {
 		const payload = { sub: user.id, email: user.email };
 		return {
 			access_token: this.jwtService.sign(payload),
 		};
 	}
+
+	// post /register using user service (this is to local user or admin(maybe))
+	async register(registerDto: CreateUserDto)
 }

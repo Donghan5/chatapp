@@ -3,12 +3,15 @@ import { User } from "../users/user.entity";
 import { ChatRoom } from "../chat-rooms/chat-room.entity";
 
 @Entity('messages')
-export class Message {
+export class Messages {
 	@PrimaryGeneratedColumn({ type: 'bigint' })
 	id!: number;
 
 	@Column('text')
 	content!: string;
+
+	@Column('boolean', { default: false })
+	isDeleted!: boolean;
 
 	@CreateDateColumn({ name: 'created_at' })
 	createdAt!: Date;
