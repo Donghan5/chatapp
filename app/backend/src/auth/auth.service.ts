@@ -3,10 +3,12 @@ import { LocalService } from './local.service';
  import { GoogleService } from './google.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/create-user.dto';
+import * as bcrypt from 'bcrypt';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-	constructor(private readonly localService: LocalService, private readonly googleService: GoogleService, private readonly jwtService: JwtService) {}
+	constructor(private readonly localService: LocalService, private readonly googleService: GoogleService, private readonly jwtService: JwtService, private readonly userService: UsersService) {}
 
 	async validateLocalUser(email: string, pass: string) {
 		const user = await this.localService.validateUser(email, pass);
@@ -41,5 +43,13 @@ export class AuthService {
 	}
 
 	// post /register using user service (this is to local user or admin(maybe))
-	async register(registerDto: CreateUserDto)
+	async register(registerDto: CreateUserDto) {
+		const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+		return this.userService.createUser({
+			...registerDto,
+			password: hashedPassword,
+			provider: 'local',
+		});
+	}
 }

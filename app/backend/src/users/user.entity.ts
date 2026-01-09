@@ -1,7 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { ChatRoom } from "../chat-rooms/chat-room.entity";
-import { Message } from "../messages/messages.entity";
+import { Messages } from "../messages/messages.entity";
 import { RoomParticipant } from "../chat-rooms/room-participant.entity";
+
+export interface UserSettings {
+  theme: 'light' | 'dark' | 'system';
+  isPushEnabled: boolean;
+  isMarketingAgreed: boolean;
+}
 
 @Entity('users')
 export class User {
@@ -35,12 +41,21 @@ export class User {
 	@Column({ name: 'social_id', nullable: true })
 	socialId: string;
 
+	@Column({ length: 100, nullable: true })
+    statusMessage: string;
+
+    @Column({ 
+        type: 'jsonb', 
+        default: { theme: 'system', isPushEnabled: true, isMarketingAgreed: false } 
+    })
+    settings: UserSettings;
+
 	// Chat room which user made
 	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.createdBy)
 	createdChatRooms: ChatRoom[];
 
-	@OneToMany(() => Message, (message) => message.sender)
-	messages: Message[];
+	@OneToMany(() => Messages, (message) => message.sender)
+	messages: Messages[];
 
 	@OneToMany(() => RoomParticipant, (roomParticipant) => roomParticipant.user)
 	participatingRooms: RoomParticipant[];
