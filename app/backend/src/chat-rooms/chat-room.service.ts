@@ -1,9 +1,9 @@
 import { Injectable, InternalServerErrorException, BadRequestException, NotFoundException } from "@nestjs/common";
-import { CreateChatRoomDto } from "./create-chat-room.dto";
-import { ChatRoom } from "./chat-room.entity";
+import { CreateChatRoomDto } from "./dto/create-chat-room.dto";
+import { ChatRoom } from "./entities/chat-room.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DataSource, EntityManager } from "typeorm";
-import { User } from "../users/user.entity";
+import { User } from "../users/entities/user.entity";
 import { RoomParticipant } from "./room-participant.entity";
 
 @Injectable()
@@ -77,7 +77,7 @@ export class ChatRoomService {
             where: { id: roomId },
             relations: ['participants', 'createdBy']
         });
-        
+
         if (!room) throw new NotFoundException('Chat room not found');
         return room;
     }
@@ -94,16 +94,42 @@ export class ChatRoomService {
         return this.addParticipantToRoom(targetUserId, roomId);
     }
 
-    async deleteChatRoom(roomId: number): Promise<void> {
+    async deleteChatRoom(roomId: number, userId: number): Promise<void> {
+        const room = await this.chatRoomRepository.findOne({ 
+            where: { id: roomId },
+            relations: ['createdBy'] 
+        });
+
+        if (!room) throw new NotFoundException('Room not found');
+        
+        if (room.createdBy.id !== userId) {
+            throw new BadRequestException('Only the creator can delete this room');
+        }
+
         await this.chatRoomRepository.delete(roomId);
     }
+    
+    async markAsRead(userId: number, roomId: number) {
+        await this.roomParticipantRepository.update(
+            { userId, roomId },
+            { lastReadAt: new Date() },
+        );
+    }
 
-	async markAsRead(userId: number, roomId: number) {
-		await this.roomParticipantRepository.update(
-			{ userId, roomId },
-			{ lastReadAt: new Date() },
-		);
-	}
+    async updateChatRoom(roomId: number, userId: number, updateChatRoomDto: UpdateChatRoomDto): Promise<void> {
+        const room = await this.chatRoomRepository.findOne({ 
+            where: { id: roomId },
+            relations: ['createdBy']
+        });
+
+        if (!room) throw new NotFoundException('Room not found');
+
+        if (room.createdBy.id !== userId) {
+             throw new BadRequestException('Only the creator can update this room');
+        }
+
+        await this.chatRoomRepository.update(roomId, updateChatRoomDto);
+    }
 
     private async addParticipantToRoom(userId: number, roomId: number): Promise<void> {
         const room = await this.chatRoomRepository.findOne({ where: { id: roomId } });

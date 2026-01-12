@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
-import { User } from "../users/user.entity";
+import { User } from "../users/entities/user.entity";
 import { ChatRoom } from "../chat-room.entity";
 
 @Entity('room_participants')

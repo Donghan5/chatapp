@@ -112,38 +112,11 @@ make clean
 
 ## 🗺️ Roadmap (MVP Milestones)
 
-The goal is to reach a Minimum Viable Product (MVP) with the following phases:
-
-- [x] **Phase 1: Foundation**
-    - Project initialization (Monorepo, TS Config).
-    - Docker & Kubernetes setup.
-    - CI/CD pipeline basics (Makefile).
-
-- [x] **Phase 2: Authentication**
-    - Implement Google OAuth flow.
-    - Secure API endpoints with JWT.
-    - User session management.
-
-- [ ] **Phase 3: Real-time Communication**
-    - WebSocket server implementation.
-    - Kafka integration for message queuing.
-    - Basic 1-on-1 chat functionality.
-
-- [ ] **Phase 4: Data Persistence**
-    - Design and migrate PostgreSQL schema.
-    - Store and retrieve message history.
-    - User profile management.
-
-- [ ] **Phase 5: UI/UX Polish**
-    - Responsive layout with TailwindCSS.
-    - Landing page and Chat interface design.
-    - Error handling and loading states.
-
-- [ ] **Phase 6: MVP Release**
-    - End-to-end testing.
-    - Production build optimization.
-    - Final deployment verification.
+Backend MVP
+ - created 80% of the backend
+ - Have to modify tests
 
 ## DataBase diagram
 
 ![Database Diagram](./chatapp_database_schema_v2.png)
+[Changed feature] --> added created_at, status, requester and recipient to friend entity

@@ -1,12 +1,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { User } from "./user.entity";
-import { CreateUserDto } from "./create-user.dto";
-import { UpdateSettingsDto } from "./update-user.dto";
+import { User } from "./entities/user.entity";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateProfileDto, UpdateSettingsDto } from "./dto/update-user.dto";
 
 @Injectable()
-export class UsersService { 
+export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
@@ -32,7 +32,7 @@ export class UsersService {
 	}
 
 	async getMyProfile(id: number): Promise<User> {
-		const user = this.userRepository.findOne({ where: { id }});
+		const user = await this.userRepository.findOne({ where: { id } });
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
@@ -41,7 +41,7 @@ export class UsersService {
 		return safeUser as User;
 	}
 
-	async updateProfile(id: number, dto: UpdateSettingsDto): Promise<void> {
+	async updateProfile(id: number, dto: UpdateProfileDto): Promise<void> {
 		await this.userRepository.update(id, dto);
 	}
 
@@ -54,4 +54,15 @@ export class UsersService {
 		return await this.userRepository.save(user);
 	}
 
+	async deleteMyProfile(id: number): Promise<void> {
+		const result = await this.userRepository.delete(id);
+		if (result.affected === 0) {
+			throw new NotFoundException('User not found');
+		}
+	}
+
+	async findUserById(id: number): Promise<User | null> {
+		const user = await this.userRepository.findOne({ where: { id } });
+		return user;
+	}
 }

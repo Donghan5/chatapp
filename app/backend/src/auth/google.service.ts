@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "../users/user.entity";
+import { User } from "../users/entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -7,7 +7,7 @@ import { Repository } from "typeorm";
 export class GoogleService {
 	constructor(
 		@InjectRepository(User) private usersRepository: Repository<User>,
-	) {}
+	) { }
 
 	async validateUser(details: { email: string; firstName: string; lastName: string; socialId: string }): Promise<User | null> {
 		const user = await this.usersRepository.findOne({

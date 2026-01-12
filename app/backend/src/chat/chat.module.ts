@@ -5,8 +5,8 @@ import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { ChatController } from './chat.controller';
 import { Messages } from '../messages/messages.entity';
-import { ChatRoom } from '../chat-rooms/chat-room.entity';
-import { User } from '../users/user.entity';
+import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
+import { User } from '../users/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -20,7 +20,7 @@ import { AuthModule } from '../auth/auth.module';
         options: {
           client: {
             clientId: 'chat-app',
-            brokers: ['localhost:9092'], 
+            brokers: ['localhost:9092'],
           },
           consumer: {
             groupId: 'chat-consumer-group',
@@ -29,7 +29,7 @@ import { AuthModule } from '../auth/auth.module';
       },
     ]),
   ],
-  controllers: [ChatController], 
+  controllers: [ChatController],
   providers: [ChatGateway, ChatService],
 })
 export class ChatModule { }

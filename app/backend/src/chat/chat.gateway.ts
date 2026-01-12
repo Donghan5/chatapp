@@ -1,7 +1,7 @@
-import { 
-	SubscribeMessage, 
-	WebSocketGateway, 
-	MessageBody, 
+import {
+	SubscribeMessage,
+	WebSocketGateway,
+	MessageBody,
 	ConnectedSocket,
 	WebSocketServer,
 	OnGatewayConnection,
@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { WsJwtGuard } from 'src/auth/ws-jwt-guard';
-import { CreateMessageDto } from '../messages/create-messages.dto';
+import { CreateMessageDto } from '../messages/dto/create-messages.dto';
 import { Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -45,7 +45,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const secret = this.configService.get<string>('JWT_SECRET');
 			const payload = this.jwtService.verify(token, { secret });
-			
+
 			await this.chatService.addUser(payload.sub, client.id);
 
 			client.data.user = payload;

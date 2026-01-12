@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import LandingPage from './services/landing/index';
-import Login from './services/login/login';
-import Dashboard from './services/dashboard/index';
+import LandingPage from './src/landing/index';
+import Login from './src/login/login';
+import Dashboard from './src/dashboard/index';
 import { User } from '../../packages/common-types/src/user'; 
 
 type ViewState = 'landing' | 'login' | 'dashboard' | 'logout' | 'chat';

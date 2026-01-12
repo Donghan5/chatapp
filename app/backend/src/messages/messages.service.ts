@@ -2,9 +2,9 @@ import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/co
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Messages } from "./messages.entity";
-import { CreateMessageDto } from "./create-messages.dto";
-import { ChatRoom } from "../chat-rooms/chat-room.entity";
-import { User } from "../users/user.entity";
+import { CreateMessageDto } from "./dto/create-messages.dto";
+import { ChatRoom } from "../chat-rooms/entities/chat-room.entity";
+import { User } from "../users/entities/user.entity";
 
 @Injectable()
 export class MessageService {

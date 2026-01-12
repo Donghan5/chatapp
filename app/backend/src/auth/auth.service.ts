@@ -1,14 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LocalService } from './local.service';
- import { GoogleService } from './google.service';
+import { GoogleService } from './google.service';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from 'src/users/create-user.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-	constructor(private readonly localService: LocalService, private readonly googleService: GoogleService, private readonly jwtService: JwtService, private readonly userService: UsersService) {}
+	constructor(private readonly localService: LocalService, private readonly googleService: GoogleService, private readonly jwtService: JwtService, private readonly userService: UsersService) { }
 
 	async validateLocalUser(email: string, pass: string) {
 		const user = await this.localService.validateUser(email, pass);
@@ -21,11 +21,11 @@ export class AuthService {
 
 
 	async validateGoogleUser(email: string, firstName: string | undefined, lastName: string | undefined, socialId: string) {
-		const user = await this.googleService.validateUser({ 
-			email, 
-			firstName: firstName || '', 
+		const user = await this.googleService.validateUser({
+			email,
+			firstName: firstName || '',
 			lastName: lastName || '',
-			socialId 
+			socialId
 		});
 
 		if (!user) {

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from "typeorm";
-import { User } from "../users/user.entity";
+import { User } from "../../users/entities/user.entity";
 import { Message } from "../messages/messages.entity";
-import { RoomParticipant } from "./room-participant.entity";
+import { RoomParticipant } from "../room-participant.entity";
 
 @Entity('chat_rooms')
 export class ChatRoom {
