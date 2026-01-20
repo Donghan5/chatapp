@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import LandingPage from './src/landing/index';
-import Login from './src/login/login';
-import Dashboard from './src/dashboard/index';
-import { User } from '../../packages/common-types/src/user';
+import LandingPage from './src/pages/LandingPage';
+import { LoginPage } from './src/pages/LoginPage';
+import DashboardPage from './src/pages/DashboardPage';
+import { User } from '@chatapp/common-types';
 
 type ViewState = 'landing' | 'login' | 'dashboard' | 'logout' | 'chat';
 
@@ -28,14 +28,14 @@ export default function App() {
 
 
     if (user && currentView === 'dashboard') {
-        return <Dashboard user={user} onLogout={handleLogout} />;
+        return <DashboardPage user={user} onLogout={handleLogout} />;
     }
 
     return (
         <>
             <LandingPage onStart={handleStart} />
             {currentView === 'login' && (
-                <Login onSuccess={handleLoginSuccess} />
+                <LoginPage onSuccess={handleLoginSuccess} />
             )}
         </>
     );

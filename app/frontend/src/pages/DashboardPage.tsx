@@ -1,7 +1,7 @@
 import React, { useState, FormEvent } from 'react';
-import { User } from '../../../../packages/common-types/src/user';
-import { useChatRooms, ChatRoom } from '../chat/chatRoom';
-import useChat from '../chat/useChat';
+import { User } from '@chatapp/common-types';
+import { useChat } from '../features/chat/hooks/useChat';
+import { ChatRoom } from '../features/chat/types';
 
 interface DashboardProps {
   user: User;
@@ -9,16 +9,24 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
-  const { rooms, loading, error } = useChatRooms(user);
-  const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
+  const { 
+    rooms, 
+    messages, 
+    activeRoomId, 
+    selectRoom, 
+    sendMessage, 
+    isLoading 
+  } = useChat();
 
-  // Connect to the selected room
-  const { messages, inputMessage, setInputMessage, handleSendMessage, loading: messagesLoading } = useChat(user, selectedRoom ? String(selectedRoom.id) : '');
+  const [inputMessage, setInputMessage] = useState('');
+
+  const selectedRoom = rooms.find(room => room.id === activeRoomId) || null;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
-    handleSendMessage(inputMessage);
+    
+    sendMessage(inputMessage);
     setInputMessage('');
   };
 
@@ -29,11 +37,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         {/* Header */}
         <header className="h-16 bg-gray-100 flex items-center justify-between px-4 border-b border-gray-200 flex-shrink-0">
           <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden cursor-pointer" title="My Profile">
-            {user.picture ? <img src={user.picture} alt="Profile" className="w-full h-full object-cover" /> : (
+            {user.avatarUrl ? <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : (
               <div className="w-full h-full flex items-center justify-center text-gray-600 font-medium text-lg bg-gray-200">{user.name ? user.name[0].toUpperCase() : 'U'}</div>
             )}
           </div>
           <div className="flex gap-4 text-gray-500">
+            <span className="self-center font-semibold text-gray-700">{user.name}</span>
             <button onClick={onLogout} title="Logout" className="p-2 hover:bg-gray-200 rounded-full transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
@@ -55,20 +64,22 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           {rooms.map(room => (
             <div
               key={room.id}
-              onClick={() => setSelectedRoom(room)}
-              className={`flex items-center gap-3 p-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${selectedRoom?.id === room.id ? 'bg-gray-100' : ''}`}
+              onClick={() => selectRoom(room.id)}
+              className={`flex items-center gap-3 p-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${activeRoomId === room.id ? 'bg-gray-100' : ''}`}
             >
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-lg">
-                {room.name[0]}
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-500 font-bold text-lg overflow-hidden">
+                 {room.avatarUrl ? <img src={room.avatarUrl} alt={room.name} className="w-full h-full object-cover"/> : room.name[0]}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline mb-1">
                   <h3 className="text-gray-900 font-medium truncate">{room.name}</h3>
-                  <span className="text-xs text-gray-500">{room.updatedAt}</span>
+                  <span className="text-xs text-gray-500">
+                    {room.updatedAt ? new Date(room.updatedAt).toLocaleDateString() : ''}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-gray-500 truncate">{room.lastMessage || "No messages yet"}</p>
-                  {room.unreadCount ? (
+                  {room.unreadCount > 0 ? (
                     <span className="bg-whatsapp-green text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">{room.unreadCount}</span>
                   ) : null}
                 </div>
@@ -76,7 +87,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
           ))}
 
-          {rooms.length === 0 && !loading && (
+          {rooms.length === 0 && (
             <div className="p-10 text-center text-gray-400 text-sm">
               No active conversations.
             </div>
@@ -90,12 +101,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           <>
             {/* Header */}
             <header className="h-16 bg-gray-100 flex items-center px-4 border-b border-gray-200 z-10 w-full flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-600 font-bold mr-4">
-                {selectedRoom.name[0]}
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-600 font-bold mr-4 overflow-hidden">
+                {selectedRoom.avatarUrl ? <img src={selectedRoom.avatarUrl} alt={selectedRoom.name} className="w-full h-full object-cover"/> : selectedRoom.name[0]}
               </div>
               <div className="flex-1">
                 <h2 className="font-medium text-gray-900">{selectedRoom.name}</h2>
-                <p className="text-xs text-gray-500">last seen today at 12:00 PM</p>
+                <p className="text-xs text-gray-500">online</p>
               </div>
             </header>
 
@@ -103,25 +114,32 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <div className="flex-1 overflow-y-auto p-4 sm:p-10 bg-[#e4dcdc]"
               style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundBlendMode: 'overlay' }}
             >
-              {messages.map((msg, idx) => {
-                const isMe = msg.senderId === Number(user.id);
-                return (
-                  <div key={idx} className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`relative px-2 py-1 shadow-sm rounded-lg max-w-[85%] sm:max-w-[65%] text-sm ${isMe ? 'bg-[#d9fdd3] text-gray-900 rounded-tr-none' : 'bg-white text-gray-900 rounded-tl-none'}`}>
-                      <p className="px-1 text-gray-800 pb-2">{msg.content}</p>
-                      <span className="text-[10px] text-gray-500 absolute bottom-1 right-2">{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-
-                      {/* Tail */}
-                      {isMe ? (
-                        <svg className="absolute -right-2 top-0 w-2 h-3 text-[#d9fdd3] fill-current" viewBox="0 0 8 13"><path d="M-2.288 0h10.288v13z" /></svg>
-                      ) : (
-                        <svg className="absolute -left-2 top-0 w-2 h-3 text-white fill-current transform scale-x-[-1]" viewBox="0 0 8 13"><path d="M-2.288 0h10.288v13z" /></svg>
-                      )}
-                    </div>
+              {isLoading ? (
+                  <div className="flex justify-center mt-10">
+                      <span className="text-gray-500 text-sm">Loading messages...</span>
                   </div>
-                );
-              })}
-              {messages.length === 0 && (
+              ) : (
+                messages.map((msg, idx) => {
+                    const isMe = String(msg.senderId) === String(user.id);
+                    return (
+                    <div key={idx} className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`relative px-2 py-1 shadow-sm rounded-lg max-w-[85%] sm:max-w-[65%] text-sm ${isMe ? 'bg-[#d9fdd3] text-gray-900 rounded-tr-none' : 'bg-white text-gray-900 rounded-tl-none'}`}>
+                        <p className="px-1 text-gray-800 pb-2">{msg.content}</p>
+                        <span className="text-[10px] text-gray-500 absolute bottom-1 right-2">{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+
+                        {/* Tail */}
+                        {isMe ? (
+                            <svg className="absolute -right-2 top-0 w-2 h-3 text-[#d9fdd3] fill-current" viewBox="0 0 8 13"><path d="M-2.288 0h10.288v13z" /></svg>
+                        ) : (
+                            <svg className="absolute -left-2 top-0 w-2 h-3 text-white fill-current transform scale-x-[-1]" viewBox="0 0 8 13"><path d="M-2.288 0h10.288v13z" /></svg>
+                        )}
+                        </div>
+                    </div>
+                    );
+                })
+              )}
+              
+              {!isLoading && messages.length === 0 && (
                 <div className="flex justify-center mt-10">
                   <span className="bg-[#fff5c4] text-gray-800 text-xs px-3 py-1 rounded shadow-sm">
                     🔒 Messages are end-to-end encrypted. No one outside of this chat, not even ChatApp, can read or listen to them.
