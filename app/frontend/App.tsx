@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import LandingPage from './src/landing/index';
 import Login from './src/login/login';
 import Dashboard from './src/dashboard/index';
-import { User } from '../../packages/common-types/src/user'; 
+import { User } from '../../packages/common-types/src/user';
 
 type ViewState = 'landing' | 'login' | 'dashboard' | 'logout' | 'chat';
 
 export default function App() {
     const [currentView, setCurrentView] = useState<ViewState>('landing');
-    
+
     const [user, setUser] = useState<User | null>(null);
 
     const handleStart = () => {
@@ -23,7 +23,7 @@ export default function App() {
     const handleLogout = () => {
         setUser(null);
         localStorage.removeItem('jwtToken');
-        setCurrentView('login'); 
+        setCurrentView('login');
     };
 
 
@@ -31,9 +31,12 @@ export default function App() {
         return <Dashboard user={user} onLogout={handleLogout} />;
     }
 
-    if (currentView === 'login') {
-        return <Login onSuccess={handleLoginSuccess} />;
-    }
-
-    return <LandingPage onStart={handleStart} />;
+    return (
+        <>
+            <LandingPage onStart={handleStart} />
+            {currentView === 'login' && (
+                <Login onSuccess={handleLoginSuccess} />
+            )}
+        </>
+    );
 }

@@ -3,7 +3,7 @@ export interface User {
 	name: string;
 	email: string;
 	password_hash?: string;
-	picture?: string;
+	avatarUrl?: string;
 	profileCompleted: boolean;
 	token?: string;
 }

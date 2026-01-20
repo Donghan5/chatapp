@@ -7,7 +7,12 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "noEmit": true,
-    "composite": true
+    "composite": true,
+    
+    "baseUrl": ".",
+    "paths": {
+      "@chatapp/common-types": ["../../packages/common-types/src/index.ts"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"],
