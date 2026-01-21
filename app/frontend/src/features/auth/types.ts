@@ -15,7 +15,8 @@ export interface GoogleLoginRequest {
 }
 
 export interface RegisterRequest {
-	name: string;
+	firstName: string;
+	lastName: string;
 	email: string;
 	pass: string;
 }

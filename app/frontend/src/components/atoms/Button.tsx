@@ -14,10 +14,11 @@ export const Button = ({
   onClick,
   children,
   className = "",
+  disabled,
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "font-semibold rounded focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors opacity-50 cursor-not-allowed";
+    "font-semibold rounded focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors";
 
   const variantStyles: Record<ButtonVariant, string> = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
@@ -36,10 +37,12 @@ export const Button = ({
     icon: "p-2 w-10 h-10",
   };
 
-  const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
+  const disabledStyles = disabled ? "opacity-50 cursor-not-allowed" : "";
+
+  const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${className}`;
 
   return (
-    <button className={combinedStyles} onClick={onClick} {...props}>
+    <button className={combinedStyles} onClick={onClick} disabled={disabled} {...props}>
       {children}
     </button>
   );

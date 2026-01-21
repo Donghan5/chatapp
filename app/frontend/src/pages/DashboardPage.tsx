@@ -1,19 +1,41 @@
-import React, { useState, FormEvent } from "react";
-import { User } from "../../../../packages/common-types/src/user";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../features/auth/hooks/useAuth";
 import { useChat } from "../features/chat/hooks/useChat";
 import { SideBar } from "../components/organisms/SideBar";
 import { Header } from "../components/organisms/Header";
 import { ChatBubble } from "../components/molecules/ChatBubble";
 import { MessageInput } from "../components/molecules/MessageInput";
 
-interface DashboardProps {
-  user: User;
-  onLogout?: () => void;
-}
+const DashboardPage = () => {
+  const navigate = useNavigate();
 
-export default function Dashboard({ user, onLogout }: DashboardProps) {
-  const { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading } =
-    useChat();
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
+
+  const {
+    rooms,
+    messages,
+    activeRoomId,
+    selectRoom,
+    sendMessage,
+    isLoading: isChatLoading,
+  } = useChat();
+
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      navigate("/login");
+    }
+  }, [user, isAuthLoading, navigate]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   const selectedRoom = rooms.find((room) => room.id === activeRoomId) || null;
 
@@ -24,8 +46,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         rooms={rooms}
         activeRoomId={activeRoomId}
         onSelectRoom={selectRoom}
-        onLogout={onLogout}
-        loading={isLoading}
+        onLogout={logout}
+        loading={isChatLoading}
       />
 
       <main className="flex-1 flex flex-col relative bg-whatsapp-chat-bg">
@@ -41,9 +63,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 backgroundBlendMode: "overlay",
               }}
             >
-              {isLoading && messages.length === 0 ? (
+              {isChatLoading && messages.length === 0 ? (
                 <div className="flex justify-center mt-10">
-                  <span className="text=gray-500 text-sm">
+                  <span className="text-gray-500 text-sm">
                     Loading messages...
                   </span>
                 </div>
@@ -70,11 +92,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 })
               )}
 
-              {!isLoading && messages.length === 0 && (
+              {!isChatLoading && messages.length === 0 && (
                 <div className="flex justify-center mt-10">
                   <span className="bg-[#fff5c4] text-gray-800 text-xs px-3 py-1 rounded shadow-sm">
-                    Messages are end-to-end encrypte Messages are end-to-end
-                    encrypted.
+                    Messages are end-to-end encrypted.
                   </span>
                 </div>
               )}
@@ -102,5 +123,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </main>
     </div>
   );
-}
+};
 
+export default DashboardPage;

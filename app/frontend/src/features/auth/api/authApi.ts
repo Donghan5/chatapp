@@ -1,6 +1,6 @@
 import { client } from '../../../lib/axios';
 import type { LoginRequest, GoogleLoginRequest, AuthResponse, RegisterRequest } from '../types';
-import type { User } from '../types';
+import type { User } from '@chatapp/common-types';
 
 export const authApi = {
 	login: async (data: LoginRequest): Promise<AuthResponse> => {

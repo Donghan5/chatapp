@@ -12,7 +12,7 @@ export const LoginPage = () => {
 		const token = searchParams.get('token');
 		if (token) {
 			localStorage.setItem('jwtToken', token);
-			window.location.href = '/dashboard';
+			navigate('/dashboard');
 		}
 	}, [searchParams]);
 

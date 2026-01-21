@@ -18,10 +18,17 @@ export class AuthController {
 	async googleAuth(@Req() req) {}
 
 	@Get('google/callback')
-    @UseGuards(AuthGuard('google'))
-    async googleAuthRedirect(@Req() req, @Res() res: Response) {
-        const { access_token } = await this.authService.login(req.user);
+	@UseGuards(AuthGuard('google'))
+	async googleAuthRedirect(@Req() req, @Res() res: Response) {
+			const { access_token } = await this.authService.login(req.user);
 
-        res.redirect(`http://localhost:5173/login?token=${access_token}`);
-    }
+			const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+			res.redirect(`${frontendUrl}/login?token=${access_token}`);
+	}
+
+	@UseGuards(AuthGuard('jwt'))
+	@Get('me')
+	getProfile(@Request() req) {
+		return req.user;
+	}
 }
