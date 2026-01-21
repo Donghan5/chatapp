@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting local development environment (No Zookeeper)..."
+echo "🚀 Starting local development environment..."
 
 if [ "$(docker ps -aq -f name=pg-chatapp)" ]; then
     echo "♻️  Removing existing PostgreSQL container..."
@@ -16,6 +16,16 @@ docker run -d --name pg-chatapp \
   -p 5432:5432 \
   postgres:15-alpine
 
+if [ "$(docker ps -aq -f name=redis)" ]; then
+    echo "♻️  Removing existing Redis container..."
+    docker rm -f redis > /dev/null
+fi
+
+echo "🔺 Redis running..."
+docker run -d --name redis \
+  -p 6379:6379 \
+  redis:alpine
+
 if [ "$(docker ps -aq -f name=kafka)" ]; then
     echo "♻️  Removing existing Kafka container..."
     docker rm -f kafka > /dev/null
@@ -29,8 +39,25 @@ docker run -d --name kafka \
   -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@localhost:9093 \
   -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 \
   -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
-  -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT \
   -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+  -e KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true \
   bitnamilegacy/kafka:3.7
 
-echo "✅ Development environment started!"
+echo "⏳ Waiting for Kafka to be ready (10s)..."
+sleep 10  # Kafka 부팅 대기
+
+echo "🔨 Creating Kafka topics..."
+
+docker exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --create \
+  --topic chat.message.create \
+  --bootstrap-server localhost:9092 \
+  --partitions 1 \
+  --replication-factor 1 || echo "⚠️ Topic 'chat.message.create' already exists or Kafka not ready."
+
+docker exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --create \
+  --topic chat.send \
+  --bootstrap-server localhost:9092 \
+  --partitions 1 \
+  --replication-factor 1 || echo "⚠️ Topic 'chat.send' already exists or Kafka not ready."
+
+echo "✅ All services & topics started! (Postgres, Redis, Kafka)"

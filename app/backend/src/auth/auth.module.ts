@@ -12,9 +12,11 @@ import { GoogleService } from './google.service';
 import { LocalStrategy } from './local.strategy';
 import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     TypeOrmModule.forFeature([User]),
     PassportModule,
     ConfigModule,
@@ -38,4 +40,5 @@ import { JwtStrategy } from './jwt.strategy';
   ],
   exports: [AuthService, JwtModule],
 })
-export class AuthModule { }
+export class AuthModule {}
+
