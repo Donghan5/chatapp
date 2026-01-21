@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
-import type { GoogleLoginRequest, LoginRequest, User } from "../types";
+import type { GoogleLoginRequest, LoginRequest, RegisterRequest } from "../types";
+import { User } from "@chatapp/common-types";
 
 export const useAuth = () => {
 	const [user, setUser] = useState<User | null>(null);
@@ -25,6 +26,26 @@ export const useAuth = () => {
 			console.error(err);
 
 			const message = err.response?.data?.message || 'Login failed';
+			setError(message);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const register = async (data: RegisterRequest) => {
+		setIsLoading(true);
+		setError(null);
+
+		try {
+			const response = await authApi.register(data);
+
+			setUser(response.user);
+			// redirect to login page (after sign up)
+			navigate('/login');
+		} catch (err: any) {
+			console.error(err);
+
+			const message = err.response?.data?.message || 'Registration failed';
 			setError(message);
 		} finally {
 			setIsLoading(false);
@@ -65,5 +86,6 @@ export const useAuth = () => {
 		logout,
 		isLoading,
 		error,
+		register,
 	};
 }

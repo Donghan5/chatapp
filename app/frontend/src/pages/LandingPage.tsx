@@ -1,10 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface LandingPageProps {
   onStart: () => void;
 }
 
 export default function LandingPage({ onStart }: LandingPageProps) {
+  const navigate = useNavigate();
+  
+  const handleStart = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -17,7 +24,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
           <span className="text-xl font-bold tracking-tight">ChatApp</span>
         </div>
         <button
-          onClick={onStart}
+          onClick={handleStart}
           className="text-sm font-semibold text-gray-600 hover:text-whatsapp-green transition-colors"
         >
           Log in
@@ -35,7 +42,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <button
-              onClick={onStart}
+              onClick={handleStart}
               className="px-8 py-4 bg-whatsapp-green hover:bg-whatsapp-dark-green text-white text-lg font-bold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
             >
               Start Chatting Now
