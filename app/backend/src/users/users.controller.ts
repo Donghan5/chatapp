@@ -6,6 +6,8 @@ import {
   Request,
   Body,
   UseGuards,
+  Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-user.dto';
@@ -21,6 +23,15 @@ export class UsersController {
   @Get('profile')
   async getMyProfile(@Request() req) {
     return this.usersService.getMyProfile(req.user.id);
+  }
+
+  @Get('search')
+  async findByEmail(@Query('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @Patch('profile')

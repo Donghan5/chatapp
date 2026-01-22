@@ -19,8 +19,7 @@ export const useChat = () => {
     });
 
     socket.on("disconnect", () => {
-      console.log("🔴 Disconnected from socket");
-      console.log("From socket:", socket.id);
+      console.log("🔴 Disconnected from socket:", socket.id);
     });
 
     return () => {
@@ -98,4 +97,3 @@ export const useChat = () => {
 
   return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading };
 };
-

@@ -5,6 +5,7 @@ import { Avatar } from "../atoms/Avatar";
 import { Button } from "../atoms/Button";
 import { Input } from "../atoms/Input";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
+import { ProfileModal } from "../organisms/ProfileModal";
 
 interface SideBarProps {
   user: User;
@@ -26,30 +27,98 @@ export const SideBar = ({
   loading = false,
 }: SideBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
   const menuRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick(menuRef, () => setIsMenuOpen(false));
 
   return (
     <aside className="w-[30%] min-w-[320px] max-w-[420px] h-full flex flex-col border-r border-gray-200 bg-white z-20">
-      <header className="h-16 bg-gray-100 flex items-center justify-between px-4 border-b border-grat-200 bg-white z-20">
-        <div className="cursor-pointer" title="My Profile">
-          <Avatar
-            src={user.avatarUrl || undefined}
-            alt={user.name || "User Avatar"}
-            size="md"
-          />
+      <header className="h-16 bg-gray-100 flex items-center justify-between px-4 border-b border-gray-200 bg-white z-20 relative">
+        {/* Profile Dropdown Area */}
+        <div className="relative" ref={menuRef}>
+          <div
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            title="My Profile"
+          >
+            <Avatar
+              src={user.avatarUrl || null}
+              name={user.name || "?"}
+              size="md"
+            />
+          </div>
+
+          {/* Dropdown Menu */}
+          {isMenuOpen && (
+            <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-lg shadow-xl w-64 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-left">
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {user.name}
+                </h3>
+                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              </div>
+
+              <div className="p-1">
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsProfileOpen(true);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  Profile
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onLogout && onLogout();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2 transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4 text-red-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-4 text-gray-500 items-center">
-          <span className="font-semibold text-gray-700 text-sm hidden sm:block">
-            {user.name}
-          </span>
+        {/* Action Buttons */}
+        <div className="flex gap-2 text-gray-500 items-center">
           <Button
             variant="ghost"
             size="icon"
             onClick={onCreateRoom}
             title="New Chat"
+            className="text-gray-600 hover:bg-gray-100 rounded-full"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -62,29 +131,14 @@ export const SideBar = ({
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onLogout} title="Logout">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
               />
             </svg>
           </Button>
         </div>
       </header>
 
+      {/* Search Bar */}
       <div className="p-2 border-b border-gray-100 flex-shrink-0">
         <Input
           variant="filled"
@@ -108,6 +162,7 @@ export const SideBar = ({
         />
       </div>
 
+      {/* Room List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {rooms.map((room) => (
           <div
@@ -150,6 +205,16 @@ export const SideBar = ({
           </div>
         )}
       </div>
+
+      <ProfileModal
+        user={user}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        onUpdate={(name) => {
+          console.log("Update name to:", name);
+          setIsProfileOpen(false);
+        }}
+      />
     </aside>
   );
 };

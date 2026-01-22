@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
-import type {
-  GoogleLoginRequest,
-  LoginRequest,
-  RegisterRequest,
-} from "../types";
+import type { LoginRequest, RegisterRequest } from "../types";
 import { User } from "@chatapp/common-types";
 
 export const useAuth = () => {
@@ -92,7 +88,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      localStorage.removeItem("jwtToken");
       setUser(null);
       navigate("/login");
     } catch (err: any) {
@@ -110,4 +106,3 @@ export const useAuth = () => {
     register,
   };
 };
-
