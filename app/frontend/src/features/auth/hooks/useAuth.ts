@@ -1,105 +1,113 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
-import type { GoogleLoginRequest, LoginRequest, RegisterRequest } from "../types";
+import type {
+  GoogleLoginRequest,
+  LoginRequest,
+  RegisterRequest,
+} from "../types";
 import { User } from "@chatapp/common-types";
 
 export const useAuth = () => {
-	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	
-	const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const initAuth = async () => {
-			const token = localStorage.getItem('jwtToken');
-			if (!token) {
-				setIsLoading(false);
-				return;
-			}
+  const navigate = useNavigate();
 
-			try {
-				const userData = await authApi.getMe();
-				setUser(userData);
-			} catch (error) {
-				console.error("Session expired or invalid token");
-				localStorage.removeItem('jwtToken');
-				setUser(null);
-			} finally {
-				setIsLoading(false);
-			}
-		};
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem("jwtToken");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
-		initAuth();
-	}, []);
+      try {
+        const userData = await authApi.getMe();
+        setUser(userData);
+      } catch (error) {
+        console.error("Session expired or invalid token");
+        localStorage.removeItem("jwtToken");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-	const login = async (data: LoginRequest) => {
-		setIsLoading(true);
-		setError(null);
+    initAuth();
+  }, []);
 
-		try {
-			const response = await authApi.login(data);
+  const login = async (data: LoginRequest) => {
+    setIsLoading(true);
+    setError(null);
 
-			setUser(response.user);
-			console.log('Login successful: ', response.user);
+    try {
+      const response = await authApi.login(data);
 
-			navigate('/dashboard');
-		} catch (err: any) {
-			console.error(err);
+      if (response.accessToken) {
+        localStorage.setItem("jwtToken", response.accessToken);
+      }
+      setUser(response.user);
+      console.log("Login successful: ", response.user);
 
-			const message = err.response?.data?.message || 'Login failed';
-			setError(message);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error(err);
 
-	const register = async (data: RegisterRequest) => {
-		setIsLoading(true);
-		setError(null);
+      const message = err.response?.data?.message || "Login failed";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-		try {
-			const response = await authApi.register(data);
-			
-			if (response.accessToken) {
-				localStorage.setItem('jwtToken', response.accessToken);
-			}
-			setUser(response.user);
-			navigate('/dashboard');
-		} catch (err: any) {
-			console.error(err);
+  const register = async (data: RegisterRequest) => {
+    setIsLoading(true);
+    setError(null);
 
-			const message = err.response?.data?.message || 'Registration failed';
-			setError(message);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+    try {
+      const response = await authApi.register(data);
 
-	// For google login, we don't have a form data, we only have a token
-	const loginWithGoogle = async (token: string) => {
-		localStorage.setItem('jwtToken', token);
-		window.location.href = '/dashboard';
-	};
+      if (response.accessToken) {
+        localStorage.setItem("jwtToken", response.accessToken);
+      }
+      setUser(response.user);
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error(err);
 
-	const logout = async () => {
-		try {
-			await authApi.logout();
-			setUser(null);
-			navigate('/login');
-		} catch (err: any) {
-			setError('Failed to logout');
-		}
-	};
+      const message = err.response?.data?.message || "Registration failed";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-	return {
-		user,
-		login,
-		loginWithGoogle,
-		logout,
-		isLoading,
-		error,
-		register,
-	};
-}
+  // For google login, we don't have a form data, we only have a token
+  const loginWithGoogle = async (token: string) => {
+    localStorage.setItem("jwtToken", token);
+    window.location.href = "/dashboard";
+  };
+
+  const logout = async () => {
+    try {
+      await authApi.logout();
+      setUser(null);
+      navigate("/login");
+    } catch (err: any) {
+      setError("Failed to logout");
+    }
+  };
+
+  return {
+    user,
+    login,
+    loginWithGoogle,
+    logout,
+    isLoading,
+    error,
+    register,
+  };
+};
+

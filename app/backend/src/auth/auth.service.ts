@@ -8,48 +8,58 @@ import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-	constructor(private readonly localService: LocalService, private readonly googleService: GoogleService, private readonly jwtService: JwtService, private readonly userService: UsersService) { }
+  constructor(
+    private readonly localService: LocalService,
+    private readonly googleService: GoogleService,
+    private readonly jwtService: JwtService,
+    private readonly userService: UsersService,
+  ) {}
 
-	async validateLocalUser(email: string, pass: string) {
-		const user = await this.localService.validateUser(email, pass);
-		if (!user) {
-			throw new UnauthorizedException('Invalid email or password');
-		}
+  async validateLocalUser(email: string, pass: string) {
+    const user = await this.localService.validateUser(email, pass);
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
-		return user;
-	}
+    return user;
+  }
 
+  async validateGoogleUser(
+    email: string,
+    firstName: string | undefined,
+    lastName: string | undefined,
+    socialId: string,
+  ) {
+    const user = await this.googleService.validateUser({
+      email,
+      firstName: firstName || '',
+      lastName: lastName || '',
+      socialId,
+    });
 
-	async validateGoogleUser(email: string, firstName: string | undefined, lastName: string | undefined, socialId: string) {
-		const user = await this.googleService.validateUser({
-			email,
-			firstName: firstName || '',
-			lastName: lastName || '',
-			socialId
-		});
+    if (!user) {
+      throw new UnauthorizedException('Invalid google user');
+    }
 
-		if (!user) {
-			throw new UnauthorizedException('Invalid google user');
-		}
+    return user;
+  }
 
-		return user;
-	}
+  async login(user: any) {
+    const payload = { sub: user.id, email: user.email };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: user,
+    };
+  }
 
-	async login(user: any) {
-		const payload = { sub: user.id, email: user.email };
-		return {
-			access_token: this.jwtService.sign(payload),
-		};
-	}
+  // post /register using user service (this is to local user or admin(maybe))
+  async register(registerDto: CreateUserDto) {
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-	// post /register using user service (this is to local user or admin(maybe))
-	async register(registerDto: CreateUserDto) {
-		const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-		return this.userService.createUser({
-			...registerDto,
-			password: hashedPassword,
-			provider: 'local',
-		});
-	}
+    return this.userService.createUser({
+      ...registerDto,
+      password: hashedPassword,
+      provider: 'local',
+    });
+  }
 }

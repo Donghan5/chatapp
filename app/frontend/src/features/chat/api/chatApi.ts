@@ -3,7 +3,7 @@ import type { ChatRoom, Message, SendMessageRequest } from '../types';
 
 export const chatApi = {
 	getRooms: async (): Promise<ChatRoom[]> => {
-		const response = await client.get<ChatRoom[]>('/chat-rooms');
+		const response = await client.get<ChatRoom[]>('/chat-rooms/my');
 		return response.data;
 	},
 
