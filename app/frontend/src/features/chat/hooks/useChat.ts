@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { socket } from '../../../lib/socket'; // 👈 방금 만든 소켓 가져오기
-import { chatApi } from '../api/chatApi';
-import type { ChatRoom, Message } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { socket } from "../../../lib/socket";
+import { chatApi } from "../api/chatApi";
+import type { ChatRoom, Message } from "../types";
 
 export const useChat = () => {
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
@@ -14,39 +14,47 @@ export const useChat = () => {
       socket.connect();
     }
 
-    socket.on('connect', () => {
-      console.log('🟢 소켓 연결 성공:', socket.id);
+    socket.on("connect", () => {
+      console.log("🟢 Connected from socket:", socket.id);
     });
 
-    socket.on('disconnect', () => {
-      console.log('🔴 소켓 연결 끊김');
+    socket.on("disconnect", () => {
+      console.log("🔴 Disconnected from socket");
+      console.log("From socket:", socket.id);
     });
 
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
+      socket.off("connect");
+      socket.off("disconnect");
     };
   }, []);
 
   useEffect(() => {
     const handleNewMessage = (newMessage: Message) => {
-      if (newMessage.roomId === activeRoomId) {
+      if (String(newMessage.roomId) === String(activeRoomId)) {
         setMessages((prev) => [...prev, newMessage]);
       }
-      
-      setRooms((prevRooms) => 
-        prevRooms.map(room => 
-          room.id === newMessage.roomId 
-            ? { ...room, lastMessage: newMessage.content, unreadCount: room.id === activeRoomId ? 0 : room.unreadCount + 1 }
-            : room
-        )
+
+      setRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.id === newMessage.roomId
+            ? {
+                ...room,
+                lastMessage: newMessage.content,
+                unreadCount:
+                  String(room.id) === String(activeRoomId)
+                    ? 0
+                    : room.unreadCount + 1,
+              }
+            : room,
+        ),
       );
     };
 
-    socket.on('receive_message', handleNewMessage);
+    socket.on("newMessage", handleNewMessage);
 
     return () => {
-      socket.off('receive_message', handleNewMessage);
+      socket.off("newMessage", handleNewMessage);
     };
   }, [activeRoomId]);
 
@@ -55,15 +63,15 @@ export const useChat = () => {
       const data = await chatApi.getRooms();
       setRooms(data);
     } catch (error) {
-      console.error('채팅방 로드 실패', error);
+      console.error("Fail to load chat room", error);
     }
   }, []);
 
   const selectRoom = async (roomId: string) => {
     setActiveRoomId(roomId);
     setIsLoading(true);
-    
-    socket.emit('join_room', roomId); 
+
+    socket.emit("joinRoom", roomId);
 
     try {
       const msgs = await chatApi.getMessages(roomId);
@@ -78,11 +86,10 @@ export const useChat = () => {
   const sendMessage = async (text: string) => {
     if (!activeRoomId) return;
 
-    socket.emit('send_message', {
+    socket.emit("sendMessage", {
       roomId: activeRoomId,
       content: text,
     });
-
   };
 
   useEffect(() => {
@@ -91,3 +98,4 @@ export const useChat = () => {
 
   return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading };
 };
+

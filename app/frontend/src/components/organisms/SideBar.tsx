@@ -1,9 +1,10 @@
-import React from "react";
+import { useState, useRef } from "react";
 import { User } from "@chatapp/common-types";
 import { ChatRoom } from "../../features/chat/types";
 import { Avatar } from "../atoms/Avatar";
 import { Button } from "../atoms/Button";
 import { Input } from "../atoms/Input";
+import { useOutsideClick } from "../../hooks/useOutsideClick";
 
 interface SideBarProps {
   user: User;
@@ -11,6 +12,7 @@ interface SideBarProps {
   activeRoomId: string | null;
   onLogout?: () => void;
   onSelectRoom: (roomId: string) => void;
+  onCreateRoom?: () => void;
   loading?: boolean;
 }
 
@@ -20,11 +22,17 @@ export const SideBar = ({
   activeRoomId,
   onLogout,
   onSelectRoom,
+  onCreateRoom,
   loading = false,
 }: SideBarProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(menuRef, () => setIsMenuOpen(false));
+
   return (
     <aside className="w-[30%] min-w-[320px] max-w-[420px] h-full flex flex-col border-r border-gray-200 bg-white z-20">
-      <header className="h-16 bg-gray-100 flex items-center justift-between px-4 border-b border-grat-200 bg-white z-20">
+      <header className="h-16 bg-gray-100 flex items-center justify-between px-4 border-b border-grat-200 bg-white z-20">
         <div className="cursor-pointer" title="My Profile">
           <Avatar
             src={user.avatarUrl || undefined}
@@ -37,6 +45,27 @@ export const SideBar = ({
           <span className="font-semibold text-gray-700 text-sm hidden sm:block">
             {user.name}
           </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onCreateRoom}
+            title="New Chat"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+          </Button>
           <Button variant="ghost" size="icon" onClick={onLogout} title="Logout">
             <svg
               xmlns="http://www.w3.org/2000/svg"

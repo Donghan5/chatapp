@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useChat } from "../features/chat/hooks/useChat";
@@ -21,6 +21,7 @@ const DashboardPage = () => {
     isLoading: isChatLoading,
   } = useChat();
 
+  // If not logged in, force redirect to login page
   useEffect(() => {
     if (!isAuthLoading && !user) {
       navigate("/login");
@@ -126,3 +127,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
