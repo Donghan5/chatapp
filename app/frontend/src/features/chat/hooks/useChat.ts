@@ -82,6 +82,16 @@ export const useChat = () => {
     }
   };
 
+  const createRoom = async (name: string, inviteUserIds?: number[]) => {
+    try {
+      const newRoom = await chatApi.createRoom(name, false, inviteUserIds);
+      await loadRooms();
+      return newRoom;
+    } catch (error) {
+      console.error("Fail to create chat room", error);
+    }
+  };
+
   const sendMessage = async (text: string) => {
     if (!activeRoomId) return;
 
@@ -95,5 +105,5 @@ export const useChat = () => {
     loadRooms();
   }, [loadRooms]);
 
-  return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading };
+  return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading, createRoom };
 };
