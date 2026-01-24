@@ -23,7 +23,6 @@ export const ChatBubble = ({
       {!isMe && (
         <div className="mr-2 mt-1 shrink-0">
           {" "}
-          {/* shrink-0: 아바타 찌그러짐 방지 */}
           <Avatar src={avatarUrl} name={senderName} size="sm" />
         </div>
       )}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Avatar } from "../atoms/Avatar";
 
 interface ChatRoomProps {
   id: string;

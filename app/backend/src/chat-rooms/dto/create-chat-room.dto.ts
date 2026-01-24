@@ -2,15 +2,15 @@ import { IsBoolean, IsNotEmpty, IsString, IsArray, IsNumber, IsOptional } from "
 
 export class CreateChatRoomDto {
     @IsString()
-    @IsNotEmpty()
-    name!: string;
+    @IsOptional()
+    name?: string;
 
     @IsBoolean()
     @IsNotEmpty()
     isGroup!: boolean;
 
     @IsArray()
-    @IsNumber({}, {each: true})
+    @IsNumber({}, { each: true })
     @IsOptional()
     inviteUserIds?: number[];
 }
