@@ -115,5 +115,5 @@ export const useChat = () => {
         loadRooms();
     }, [loadRooms]);
 
-    return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading, createRoom };
+    return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading, createRoom, loadMessages };
 };

@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, Like } from "typeorm";
 import { User } from "./entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateProfileDto, UpdateSettingsDto } from "./dto/update-user.dto";
@@ -64,5 +64,15 @@ export class UsersService {
 	async findUserById(id: number): Promise<User | null> {
 		const user = await this.userRepository.findOne({ where: { id } });
 		return user;
+	}
+
+	async searchUsers(username: string): Promise<User[]> {
+		const users = await this.userRepository.find({
+			where: {
+				username: Like(`%${username}%`),
+			},
+			select: ['id', 'username', 'avatarUrl', 'createdAt', 'updatedAt'],
+		});
+		return users;
 	}
 }
