@@ -35,7 +35,7 @@ export const friendsApi = {
     return data;
   },
 
-  responseToRequest: async (requestId: number, status: FriendStatus) => {
+  respondToRequest: async (requestId: number, status: FriendStatus) => {
     const { data } = await axiosInstance.patch(
       `/frineds/request/${requestId}`,
       { status },

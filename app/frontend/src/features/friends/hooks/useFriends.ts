@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { friendsApi, FriendStatus, FriendRequest } from '../api/friendsApi';
-import { User } from '@chatapp/common-types';
+import { useState, useEffect, useCallback } from "react";
+import { friendsApi, FriendStatus, FriendRequest } from "../api/friendsApi";
+import { User } from "@chatapp/common-types";
 
 export const useFriends = () => {
   const [friends, setFriends] = useState<User[]>([]);
@@ -15,7 +15,7 @@ export const useFriends = () => {
         friendsApi.getReceivedRequests(),
       ]);
       setFriends(friendsList);
-      setReceivedRequests();
+      setReceivedRequests(requests);
     } catch (error) {
       console.error("Failed to load friends data", error);
     } finally {
@@ -34,8 +34,8 @@ export const useFriends = () => {
 
   const acceptRequest = async (requestId: number) => {
     try {
-      await firendsApi.responseToRequest(requestId, FriendStatus.ACCEPTED);
-      await loadFriendsData();
+      await friendsApi.respondToRequest(requestId, FriendStatus.ACCEPTED);
+      await loadFriendsData(); // List refresh
     } catch (error) {
       console.error("Failed to accept request", error);
     }
@@ -44,7 +44,33 @@ export const useFriends = () => {
   const rejectRequest = async (requestId: number) => {
     try {
       await friendsApi.respondToRequest(requestId, FriendStatus.REJECTED);
-      setReceivedRequest(prev => prev.filter)
+      setReceivedRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (error) {
+      console.error("Failed to reject request", error);
     }
-  }
-}
+  };
+
+  const deleteFriendship = async (friendshipId: number) => {
+    try {
+      await friendsApi.removeFriend(friendshipId);
+      await loadFriendsData();
+    } catch (error) {
+      console.error("Failed to remove friend", error);
+    }
+  };
+
+  useEffect(() => {
+    loadFriendsData();
+  }, [loadFriendsData]);
+
+  return {
+    friends,
+    receivedRequests,
+    isLoading,
+    sendFriendRequest,
+    acceptRequest,
+    rejectRequest,
+    deleteFriendship,
+    refreshFriends: loadFriendsData,
+  };
+};
