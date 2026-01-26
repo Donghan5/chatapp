@@ -9,29 +9,30 @@ import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-
+import { MessageModule } from '../messages/messages.module';
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([Messages, ChatRoom, User]),
-    AuthModule,
-    ClientsModule.register([
-      {
-        name: 'KAFKA_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'chat-app',
-            brokers: ['localhost:9092'],
-          },
-          consumer: {
-            groupId: 'chat-producer-group',
-          },
-        },
-      },
-    ]),
-  ],
-  controllers: [ChatController],
-  providers: [ChatGateway, ChatService],
+    imports: [
+        ConfigModule,
+        TypeOrmModule.forFeature([Messages, ChatRoom, User]),
+        AuthModule,
+        MessageModule,
+        ClientsModule.register([
+            {
+                name: 'KAFKA_SERVICE',
+                transport: Transport.KAFKA,
+                options: {
+                    client: {
+                        clientId: 'chat-app',
+                        brokers: ['localhost:9092'],
+                    },
+                    consumer: {
+                        groupId: 'chat-producer-group',
+                    },
+                },
+            },
+        ]),
+    ],
+    controllers: [ChatController],
+    providers: [ChatGateway, ChatService],
 })
-export class ChatModule {}
+export class ChatModule { }

@@ -1,14 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn, Unique } from "typeorm";
 import { User } from "../../users/entities/user.entity";
 
 export enum FriendStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-  BLOCKED = 'BLOCKED',
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    REJECTED = 'REJECTED',
+    BLOCKED = 'BLOCKED',
 }
 
 @Entity('friends')
+@Unique(['requester', 'recipient'])
 export class Friend {
     @PrimaryGeneratedColumn()
     id: number;
