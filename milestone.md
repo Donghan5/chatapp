@@ -36,8 +36,8 @@ Priority	Feature	Description
 🟢 Low	Message Edit/Delete	Edit or delete sent messages
 🗺️ Suggested Milestones
 Milestone 1: Core Chat Reliability (Est. 1-2 weeks)
- Load message history when joining a room (persist & fetch)
- Fix typo: PENGING → PENDING in friendsApi.ts:5
+ Load message history when joining a room (persist & fetch) OK
+ Fix typo: PENGING → PENDING in friendsApi.ts:5 OK
  Fix/write unit tests for backend services
  Error handling improvements (network failures, reconnection)
 Milestone 2: Friends & DM Enhancement (Est. 1 week)

@@ -2,7 +2,7 @@ import { User } from "@chatapp/common-types";
 import { client } from "../../../lib/axios";
 
 export enum FriendStatus {
-  PENDING = "PENGING",
+  PENDING = "PENDING",
   ACCEPTED = "ACCEPTED",
   REJECTED = "REJECTED",
 }

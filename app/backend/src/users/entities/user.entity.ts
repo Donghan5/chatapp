@@ -9,7 +9,7 @@ import {
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 import { Messages } from '../../messages/entities/messages.entity';
 import { RoomParticipant } from '../../chat-rooms/entities/room-participant.entity';
-import { Friend } from 'src/friends/entities/friend.entity';
+import { Friend } from '../../friends/entities/friend.entity';
 
 /*
 	User settings (basic)
