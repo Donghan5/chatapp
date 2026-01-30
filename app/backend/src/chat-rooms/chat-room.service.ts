@@ -7,7 +7,7 @@ import {
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { ChatRoom } from './entities/chat-room.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager, In } from 'typeorm';
+import { Repository, DataSource, EntityManager, In, Not, MoreThan } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { RoomParticipant } from './entities/room-participant.entity';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
@@ -93,11 +93,33 @@ export class ChatRoomService {
     }
 
     async getMyChatRooms(userId: number): Promise<ChatRoom[]> {
-        return this.chatRoomRepository.find({
+        const rooms = await this.chatRoomRepository.find({
             where: { participants: { user: { id: userId } } },
-            relations: ['participants', 'createdBy'],
+            relations: ['participants', 'participants.user', 'createdBy'],
             order: { lastMessageAt: 'DESC' },
         });
+
+        const roomsWithUnread = await Promise.all(
+            rooms.map(async (room) => {
+                const myParticipant = room.participants.find(p => p.userId === userId);
+                const lastReadAt = myParticipant?.lastReadAt || new Date(0);
+
+                const unreadCount = await this.dataSource.getRepository('Message').count({
+                    where: {
+                        roomId: room.id,
+                        createdAt: MoreThan(lastReadAt),
+                        senderId: Not(userId),
+                    }
+                });
+
+                return {
+                    ...room,
+                    unreadCount,
+                };
+            })
+        );
+
+        return roomsWithUnread as unknown as ChatRoom[];
     }
 
     async getChatRoomById(roomId: number): Promise<ChatRoom> {
@@ -191,6 +213,41 @@ export class ChatRoomService {
         });
 
         await this.roomParticipantRepository.save(newParticipant);
+    }
+
+
+    async findOrCreateDMRoom(userId1: number, userId2: number): Promise<ChatRoom> {
+        // Ensure we don't create a DM with yourself
+        if (userId1 === userId2) {
+            throw new BadRequestException('Cannot create DM with yourself');
+        }
+        // 1. Find existing DM room between these two users
+        const existingRoom = await this.chatRoomRepository
+            .createQueryBuilder('room')
+            .innerJoin('room.participants', 'p1', 'p1.userId = :userId1', { userId1 })
+            .innerJoin('room.participants', 'p2', 'p2.userId = :userId2', { userId2 })
+            .where('room.isGroupChat = :isGroup', { isGroup: false })
+            .getOne();
+        if (existingRoom) {
+            return this.getChatRoomById(existingRoom.id);
+        }
+        // 2. Create new DM room
+        const [user1, user2] = await Promise.all([
+            this.userRepository.findOne({ where: { id: userId1 } }),
+            this.userRepository.findOne({ where: { id: userId2 } }),
+        ]);
+        if (!user1 || !user2) {
+            throw new NotFoundException('One or both users not found');
+        }
+        // Use the createChatRoom method with proper DTO
+        return this.createChatRoom(
+            {
+            name: '', // Will auto-generate from usernames
+            isGroup: false,
+            inviteUserIds: [userId2],
+            },
+            userId1,
+        );
     }
 }
 

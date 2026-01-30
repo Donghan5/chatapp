@@ -16,6 +16,7 @@ import { Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { MessageService } from '../messages/messages.service';
 
 @WebSocketGateway({
 	cors: {
@@ -27,11 +28,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
+	// Map userId to socketId
+	private connectedUsers = new Map<number, string>();
+
 	constructor(
 		private readonly chatService: ChatService,
 		@Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
 		private readonly jwtService: JwtService,
 		private readonly configService: ConfigService,
+		private readonly messagesService: MessageService,
 	) { }
 
 	async handleConnection(client: Socket) {
@@ -49,6 +54,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.chatService.addUser(payload.sub, client.id);
 
 			client.data.user = payload;
+
+			const userId = client.data.user.sub;
+
+			this.connectedUsers.set(userId, client.id);
+			this.server.emit('userStatus', { userId, status: 'online' });
+
+			console.log(`User ${userId} is online`);
 		} catch (error) {
 			console.log(error);
 			return client.disconnect();
@@ -60,6 +72,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (client.data.user) {
 			await this.chatService.removeUser(client.data.user.sub);
 		}
+
+		const userId = client.data.user?.sub;
+		if (userId) {
+			this.connectedUsers.delete(userId);
+			this.server.emit('userStatus', { userId, status: 'offline' });
+		}
 	}
 
 	@SubscribeMessage('joinRoom')
@@ -67,7 +85,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() roomId: number,
 	) {
+		const userId = client.data.user.sub;
 		client.join(`room-${roomId}`);
+
+		this.server.to(`room-${roomId}`).emit('messagesDelivered', {
+			roomId,
+			deliveredTo: userId,
+		});
+
 		console.log(`Client: ${client.id} joined room ${roomId}`);
 
 		return { event: 'joinedRoom', roomId };
@@ -119,5 +144,42 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		return undefined;
+	}
+
+	@SubscribeMessage('getOnlineUsers')
+	handleGetOnlineUsers() {
+		return Array.from(this.connectedUsers.keys());
+	}
+
+	@SubscribeMessage('typing')
+	handleTyping(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { roomId: number; isTyping: boolean },
+	) {
+		const user = client.data.user;
+
+		client.to(`room-${payload.roomId}`).emit('userTyping', {
+			userId: user.sub,
+			userName: user.email?.split('@')[0] || 'someone',
+			roomId: payload.roomId,
+			isTyping: payload.isTyping,
+		});
+	}
+
+
+	@SubscribeMessage('markAsRead')
+	async handleMarkAsRead(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { roomId: number; messageIds: number[] },
+	) {
+		const userId = client.data.user.sub;
+		
+		await this.messagesService.markAsRead(payload.messageIds);
+
+		client.to(`room-${payload.roomId}`).emit('messagesRead', {
+			roomId: payload.roomId,
+			messageIds: payload.messageIds,
+			readBy: userId,
+		});
 	}
 }

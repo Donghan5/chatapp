@@ -7,6 +7,8 @@ import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { FriendList } from "../../features/friends/ui/FriendList";
 import { User } from "@chatapp/common-types";
 import { ChatRoom } from "../../features/chat/types";
+import { chatApi } from "../../features/chat/api/chatApi";
+import { usePresence } from "../../features/chat/hooks/usePresence";
 
 interface SideBarProps {
   user: User;
@@ -32,6 +34,8 @@ export const SideBar = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const { isUserOnline } = usePresence();
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick(menuRef, () => {
@@ -48,7 +52,7 @@ export const SideBar = ({
           >
             <Avatar
               src={user.avatarUrl || null}
-              name={user.name || "?"}
+              name={user.name || user.email?.split('@')[0] || "?"}
               size="md"
             />
           </div>
@@ -104,7 +108,7 @@ export const SideBar = ({
           </svg>
         </button>
       </header>
-
+      
       <div className="flex border-b border-gray-100 bg-white">
         <button
           onClick={() => setViewMode("chats")}
@@ -164,12 +168,19 @@ export const SideBar = ({
           )
         ) : (
           <FriendList
-            onStartChat={(id) => {
-              console.log("Start chat with:", id);
-              setViewMode("chats");
+            onStartChat={async (friendId) => {
+              try {
+                const room = await chatApi.createOrGetDM(friendId);
+                setViewMode("chats");
+                onSelectRoom(room.id);
+              } catch (error) {
+                console.error("Failed to create or get DM room:", error);
+              }
             }}
+            isUserOnline={isUserOnline}
           />
         )}
+
       </div>
 
       <ProfileModal

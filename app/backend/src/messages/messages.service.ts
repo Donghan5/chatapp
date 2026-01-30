@@ -2,10 +2,11 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Messages } from './entities/messages.entity';
+import { In, Not, Repository } from 'typeorm';
+import { Message, MessageStatus } from './entities/messages.entity';
 import { CreateMessageDto } from './dto/create-messages.dto';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
@@ -13,8 +14,8 @@ import { User } from '../users/entities/user.entity';
 @Injectable()
 export class MessageService {
   constructor(
-    @InjectRepository(Messages)
-    private messageRepository: Repository<Messages>,
+    @InjectRepository(Message)
+    private messageRepository: Repository<Message>,
   ) {}
 
   async createMessage(createMessageDto: CreateMessageDto) {
@@ -26,7 +27,7 @@ export class MessageService {
     content: string,
     roomId: number,
     senderId: number,
-  ): Promise<Messages> {
+  ): Promise<Message> {
     const newMessage = this.messageRepository.create({
       content,
       room: { id: roomId } as ChatRoom,
@@ -36,7 +37,7 @@ export class MessageService {
     return this.messageRepository.save(newMessage);
   }
 
-  async getMessages(roomId: number): Promise<Messages[]> {
+  async getMessages(roomId: number): Promise<Message[]> {
     return this.messageRepository.find({
       where: { room: { id: roomId } },
       relations: ['sender'],
@@ -84,8 +85,22 @@ export class MessageService {
       throw new UnauthorizedException('You can only delete your own message');
     }
 
-    message.isDeleted = true;
+    message.status = MessageStatus.DELETED;
     await this.messageRepository.save(message);
+  }
+
+  async markAsDelivered(messageIds: number[]): Promise<void> {
+    await this.messageRepository.update(
+      { id: In(messageIds), status: MessageStatus.SENT },
+      { status: MessageStatus.DELIVERED, deliveredAt: new Date() }
+    );
+  }
+
+  async markAsRead(messageIds: number[]): Promise<void> {
+    await this.messageRepository.update(
+      { id: In(messageIds), status: Not(MessageStatus.READ) },
+      { status: MessageStatus.READ, readAt: new Date() }
+    );
   }
 }
 

@@ -28,6 +28,13 @@ export const friendsApi = {
     return data;
   },
 
+  getSentRequests: async () => {
+    const { data } = await client.get<FriendRequest[]>(
+      "/friends/requests/sent",
+    );
+    return data;
+  },
+
   sendRequest: async (recipientId: number) => {
     const { data } = await client.post("/friends/request", {
       recipientId,

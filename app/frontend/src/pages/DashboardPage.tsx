@@ -6,6 +6,7 @@ import { SideBar } from "../components/organisms/SideBar";
 import { Header } from "../components/organisms/Header";
 import { ChatBubble } from "../components/molecules/ChatBubble";
 import { MessageInput } from "../components/molecules/MessageInput";
+import { useNotifications } from "../features/chat/hooks/useNotifications";
 
 const DashboardPage = () => {
     const navigate = useNavigate();
@@ -20,7 +21,11 @@ const DashboardPage = () => {
         sendMessage,
         createRoom,
         isLoading: isChatLoading,
+        sendTyping,
+        typingUsers,
     } = useChat();
+
+    useNotifications(activeRoomId);
 
     // If not logged in, force redirect to login page
     useEffect(() => {
@@ -90,6 +95,7 @@ const DashboardPage = () => {
                                             isMe={isMe}
                                             senderName={!isMe ? selectedRoom.name : undefined}
                                             avatarUrl={!isMe ? selectedRoom.avatarUrl : undefined}
+                                            status={isMe ? msg.status : undefined}
                                         />
                                     );
                                 })
@@ -103,9 +109,21 @@ const DashboardPage = () => {
                                 </div>
                             )}
                         </div>
-
+                        {typingUsers.size > 0 && (
+                        <div className="px-4 py-2 flex items-center gap-2">
+                            <div className="flex gap-1">
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </div>
+                            <span className="text-gray-500 text-sm">
+                                {Array.from(typingUsers.values()).join(", ")} typing...
+                            </span>
+                        </div>
+                        )}
                         <MessageInput
                             onSendMessage={sendMessage}
+                            onTyping={sendTyping}
                             placeholder="Type a message"
                         />
                     </>

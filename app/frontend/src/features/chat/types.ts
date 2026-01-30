@@ -1,3 +1,7 @@
+import { User } from "@chatapp/common-types";
+
+export type MessageStatus = 'sent' | 'delivered' | 'read' | 'deleted';
+
 export interface ChatRoom {
 	id: string;
 	name: string;
@@ -5,6 +9,9 @@ export interface ChatRoom {
 	lastMessage?: string;
 	unreadCount: number;
 	updatedAt: string;
+	isGroup: boolean;
+	participants?: User[];
+	createdBy?: User;
 }
 
 export interface Message {
@@ -13,6 +20,7 @@ export interface Message {
 	content: string;
 	createdAt: string;
 	roomId: string;
+	status?: MessageStatus;
 }
 
 export interface SendMessageRequest {

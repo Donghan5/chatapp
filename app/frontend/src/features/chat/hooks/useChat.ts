@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { socket } from "../../../lib/socket";
 import { chatApi } from "../api/chatApi";
-import type { ChatRoom, Message } from "../types";
+import type { ChatRoom, Message, MessageStatus } from "../types";
 
 export const useChat = () => {
     const [rooms, setRooms] = useState<ChatRoom[]>([]);
     const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [typingUsers, setTypingUsers] = useState<Map<number, string>>(new Map());
 
     useEffect(() => {
         if (!socket.connected) {
@@ -111,9 +112,94 @@ export const useChat = () => {
         });
     };
 
+    const sendTyping = (isTyping: boolean) => {
+        if (!activeRoomId) return;
+
+        socket.emit('typing', { roomId: activeRoomId, isTyping });
+    };
+
     useEffect(() => {
         loadRooms();
-    }, [loadRooms]);
 
-    return { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading, createRoom, loadMessages };
+        const handleUserTyping = ({ userId, userName, roomId, isTyping }: {
+            userId: number;
+            userName: string;
+            roomId: number;
+            isTyping: boolean;
+        }) => {
+            setTypingUsers((prev) => {
+                const newMap = new Map(prev);
+                if (isTyping) {
+                    newMap.set(userId, userName);
+                } else {
+                    newMap.delete(userId);
+                }
+                return newMap;
+            })
+        }
+
+        const handleMessagesDelivered = ({ roomId, deliveredTo }: { roomId: string; deliveredTo: number }) => {
+            if (String(roomId) === String(activeRoomId)) {
+                setMessages(prev =>
+                    prev.map(msg =>
+                        msg.status === 'sent' ? { ...msg, status: 'delivered' as MessageStatus } : msg
+                    )
+                );
+            }
+        };
+
+
+        const handleMessagesRead = ({ roomId, messageIds }: { roomId: string; messageIds: number[] }) => {
+            if (String(roomId) === String(activeRoomId)) {
+                setMessages(prev =>
+                    prev.map(msg =>
+                        messageIds.includes(Number(msg.id)) ? { ...msg, status: 'read' as MessageStatus } : msg
+                    )
+                );
+            }
+        };
+
+        // I will check this logic
+        const handleMessagesDeleted = ({ roomId, messageIds }: { roomId: string; messageIds: number[] }) => {
+            if (String(roomId) === String(activeRoomId)) {
+                setMessages(prev =>
+                    prev.map(msg =>
+                        messageIds.includes(Number(msg.id)) ? { ...msg, status: 'deleted' as MessageStatus } : msg
+                    )
+                );
+            }
+        };
+
+        socket.on('userTyping', handleUserTyping);
+        socket.on('messagesDelivered', handleMessagesDelivered);
+        socket.on('messagesRead', handleMessagesRead);
+        socket.on('messagesDeleted', handleMessagesDeleted);
+
+        return () => {
+            socket.off('userTyping', handleUserTyping);
+            socket.off('messagesDelivered', handleMessagesDelivered);
+            socket.off('messagesRead', handleMessagesRead);
+            socket.off('messagesDeleted', handleMessagesDeleted);
+        }
+    }, [activeRoomId]);
+
+    const markMessageAsRead = (messageIds: string[]) => {
+        if (!activeRoomId || messageIds.length === 0) return;
+
+        socket.emit('markAsRead', { roomId: activeRoomId, messageIds });
+    };
+
+    return { 
+        rooms, 
+        messages, 
+        activeRoomId, 
+        selectRoom, 
+        sendMessage, 
+        isLoading, 
+        createRoom, 
+        loadMessages, 
+        sendTyping, 
+        typingUsers,
+        markMessageAsRead 
+    };
 };

@@ -1,19 +1,37 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useRef, useEffect } from "react";
 import { Input } from "../atoms/Input";
 import { Button } from "../atoms/Button";
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
+  onTyping?: (isTyping: boolean) => void;
   placeholder?: string;
   disabled?: boolean;
 }
 
 export const MessageInput = ({
   onSendMessage,
+  onTyping,
   placeholder = "Type your message...",
   disabled = false,
 }: MessageInputProps) => {
+  const [text, setText] = useState("");
   const [message, setMessage] = useState("");
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+
+    onTyping?.(true);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      onTyping?.(false);
+    }, 1500);
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -22,7 +40,16 @@ export const MessageInput = ({
 
     onSendMessage(message.trim());
     setMessage("");
+    onTyping?.(false);
   };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+  }, []);
 
   return (
     <form

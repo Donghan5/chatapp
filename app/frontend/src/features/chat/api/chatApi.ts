@@ -29,4 +29,23 @@ export const chatApi = {
         });
         return response.data;
     },
+
+    createOrGetDM: async (targetUserId: number): Promise<ChatRoom> => {
+        const response = await client.post<ChatRoom>("/chat-rooms/dm", {
+            targetUserId,
+        });
+        return response.data;
+    },
+
+    addParticipant: async (roomId: string, userId: number): Promise<void> => {
+        await client.post(`/chat-rooms/${roomId}/participants`, { userId });
+    },
+
+    removeParticipant: async (roomId: string, userId: number): Promise<void> => {
+        await client.delete(`/chat-rooms/${roomId}/participants`, { data: { userId } });
+    },
+
+    updateRoomName: async (roomId: string, name: string): Promise<void> => {
+        await client.put(`/chat-rooms/${roomId}`, { name });
+    },
 };

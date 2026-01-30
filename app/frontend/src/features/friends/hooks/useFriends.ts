@@ -5,17 +5,20 @@ import { User } from "@chatapp/common-types";
 export const useFriends = () => {
   const [friends, setFriends] = useState<User[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadFriendsData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [friendsList, requests] = await Promise.all([
+      const [friendsList, received, sent] = await Promise.all([
         friendsApi.getFriends(),
         friendsApi.getReceivedRequests(),
+        friendsApi.getSentRequests(),
       ]);
       setFriends(friendsList);
-      setReceivedRequests(requests);
+      setReceivedRequests(received);
+      setSentRequests(sent);
     } catch (error) {
       console.error("Failed to load friends data", error);
     } finally {
@@ -26,6 +29,7 @@ export const useFriends = () => {
   const sendFriendRequest = async (userId: number) => {
     try {
       await friendsApi.sendRequest(userId);
+      await loadFriendsData();
     } catch (error) {
       console.error("Failed to send friend request", error);
       throw error;
@@ -50,6 +54,15 @@ export const useFriends = () => {
     }
   };
 
+  const cancelRequest = async (requestId: number) => {
+    try {
+      await friendsApi.removeFriend(requestId);
+      setSentRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (error) {
+      console.error("Failed to cancel request", error);
+    }
+  };
+
   const deleteFriendship = async (friendshipId: number) => {
     try {
       await friendsApi.removeFriend(friendshipId);
@@ -66,10 +79,12 @@ export const useFriends = () => {
   return {
     friends,
     receivedRequests,
+    sentRequests,
     isLoading,
     sendFriendRequest,
     acceptRequest,
     rejectRequest,
+    cancelRequest,
     deleteFriendship,
     refreshFriends: loadFriendsData,
   };

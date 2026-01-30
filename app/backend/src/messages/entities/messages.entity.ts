@@ -1,34 +1,47 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 
+export enum MessageStatus {
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  READ = 'read',
+  DELETED = 'deleted',
+}
+
 @Entity('messages')
-export class Messages {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id!: number;
+export class Message {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column('text')
-  content!: string;
+  @Column()
+  content: string;
 
-  @Column('boolean', { default: false })
-  isDeleted!: boolean;
+  @Column({
+    type: 'enum',
+    enum: MessageStatus,
+    default: MessageStatus.SENT,
+  })
+  status: MessageStatus;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt!: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt!: Date;
-
-  @ManyToOne(() => User, (user) => user.messages)
+  @ManyToOne(() => User)
   sender: User;
 
-  @ManyToOne(() => ChatRoom, (chatRoom) => chatRoom.messages)
+  @Column()
+  senderId: number;
+
+  @ManyToOne(() => ChatRoom)
   room: ChatRoom;
+
+  @Column()
+  roomId: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deliveredAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  readAt: Date;
 }

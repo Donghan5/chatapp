@@ -3,12 +3,13 @@ import { User } from "@chatapp/common-types";
 import { Avatar } from "../atoms/Avatar";
 import { Button } from "../atoms/Button";
 import { Input } from "../atoms/Input";
+import { AvatarUploadModal } from "./AvatarUploadModal";
 
 interface ProfileModalProps {
   user: User;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (name: string) => void;
+  onUpdate: (updates: Partial<User>) => void;
 }
 
 export const ProfileModal = ({
@@ -18,6 +19,7 @@ export const ProfileModal = ({
   onUpdate,
 }: ProfileModalProps) => {
   const [name, setName] = useState(user.name);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -27,8 +29,13 @@ export const ProfileModal = ({
         
         <h2 className="text-xl font-bold text-gray-900">My Profile</h2>
       
-        <div className="flex justify-center">
-          <Avatar src={user.avatarUrl} name={user.name} size="xl"/>
+        <div className="flex justify-center relative">
+          <div className="cursor-pointer group relative">
+            <Avatar src={user.avatarUrl} name={user.name} size="xl"/>
+            <Button variant="ghost" className="absolute bottom-0 left-1/2 -translate-x-1/2 group-hover:opacity-100 opacity-0">
+              Change Photo
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -50,9 +57,18 @@ export const ProfileModal = ({
 
         <div className="flex justify-end gap-3 mt-2">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={() => onUpdate(name)}>Save Changes</Button>
+          <Button variant="primary" onClick={() => onUpdate({ name })}>Save Changes</Button>
         </div>
       </div>
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        user={user}
+        onUploadSuccess={(avatarUrl) => {
+          onUpdate({ avatarUrl });
+          setIsAvatarModalOpen(false);
+        }}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import { Avatar } from "../atoms/Avatar";
+import { MessageStatusIcon } from "../atoms/MessageStatus";
 
 interface ChatBubbleProps {
   message: string;
@@ -7,6 +8,7 @@ interface ChatBubbleProps {
   isMe: boolean;
   senderName?: string;
   avatarUrl?: string;
+  status?: 'sent' | 'delivered' | 'read' | 'deleted';
 }
 
 export const ChatBubble = ({
@@ -15,6 +17,7 @@ export const ChatBubble = ({
   isMe,
   senderName,
   avatarUrl,
+  status,
 }: ChatBubbleProps) => {
   return (
     <div
@@ -41,17 +44,19 @@ export const ChatBubble = ({
             {timestamp}
           </span>
 
+          {isMe && <MessageStatusIcon status={status} />}
           <div
             className={`
               px-4 py-2 text-sm break-words shadow-sm
+              ${status === 'deleted' ? 'italic opacity-70' : ''}
               ${
                 isMe
-                  ? "bg-blue-500 text-white rounded-l-lg rounded-tr-lg rounded-br-none" // 오타 수정 & 모양 다듬기
+                  ? "bg-blue-500 text-white rounded-l-lg rounded-tr-lg rounded-br-none"
                   : "bg-white text-gray-900 border border-gray-200 rounded-r-lg rounded-tl-lg rounded-bl-none"
               }
             `}
           >
-            {message}
+            {status === 'deleted' ? 'This message was deleted' : message}
           </div>
         </div>
       </div>
