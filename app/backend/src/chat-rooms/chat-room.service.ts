@@ -3,6 +3,7 @@ import {
     InternalServerErrorException,
     BadRequestException,
     NotFoundException,
+    ForbiddenException,
 } from '@nestjs/common';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { ChatRoom } from './entities/chat-room.entity';
@@ -247,6 +248,43 @@ export class ChatRoomService {
             inviteUserIds: [userId2],
             },
             userId1,
+        );
+    }
+
+    async removeParticipant(requesterId: number, roomId: number, targetUserId: number): Promise<void> {
+        const room = await this.getChatRoomById(roomId);
+        const requester = await this.roomParticipantRepository.findOne({
+            where: { userId: requesterId, roomId }
+        });
+
+        if (!requester) {
+            throw new ForbiddenException("You are not a member of this room");
+        }
+
+        if (requesterId !== targetUserId && requester.role !== 'admin') {
+            throw new ForbiddenException("Only admins can remove other members");
+        }
+
+        await this.roomParticipantRepository.delete({ userId: targetUserId, roomId });
+    }
+
+    async updateParticipantRole(
+        requesterId: number, 
+        roomId: number, 
+        targetUserId: number,
+        role: 'admin' | 'user'
+    ): Promise<void> {
+        const requester = await this.roomParticipantRepository.findOne({
+            where: { userId: requesterId, roomId }
+        });
+
+        if (requester?.role !== 'admin') {
+            throw new ForbiddenException('Only admin can manage roles');
+        }
+
+        await this.roomParticipantRepository.update(
+            { userId: targetUserId, roomId },
+            { role }
         );
     }
 }

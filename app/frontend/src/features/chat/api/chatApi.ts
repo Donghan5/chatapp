@@ -37,15 +37,28 @@ export const chatApi = {
         return response.data;
     },
 
+    getRoom: async (roomId: string): Promise<ChatRoom> => {
+        const response = await client.get<ChatRoom>(`/chat-rooms/${roomId}`);
+        return response.data;
+    },
+    
     addParticipant: async (roomId: string, userId: number): Promise<void> => {
         await client.post(`/chat-rooms/${roomId}/participants`, { userId });
     },
 
     removeParticipant: async (roomId: string, userId: number): Promise<void> => {
-        await client.delete(`/chat-rooms/${roomId}/participants`, { data: { userId } });
+        await client.delete(`/chat-rooms/${roomId}/participants/${userId}`);
     },
 
     updateRoomName: async (roomId: string, name: string): Promise<void> => {
         await client.put(`/chat-rooms/${roomId}`, { name });
+    },
+
+    updateParticipantRole: async (roomId: string, userId: number, role: 'admin' | 'user'): Promise<void> => {
+        await client.patch(`/chat-rooms/${roomId}/participants/${userId}/role`, { role });
+    },
+
+    leaveChatRoom: async (roomId: string, userId: number): Promise<void> => {
+         await client.delete(`/chat-rooms/${roomId}/leave`);
     },
 };

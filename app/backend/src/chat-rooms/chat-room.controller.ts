@@ -15,6 +15,7 @@ import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard'; //
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 import { InviteUserDto } from './dto/invite-user.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Controller('chat-rooms')
 @UseGuards(JwtAuthGuard)
@@ -75,5 +76,29 @@ export class ChatRoomsController {
       id,
     );
   }
+
+  @Delete(':id/participants/:userId')
+    removeParticipant(
+      @Request() req,
+      @Param('id', ParseIntPipe) roomId: number,
+      @Param('userId', ParseIntPipe) targetUserId: number,
+    ) {
+      return this.chatRoomService.removeParticipant(req.user.id, roomId, targetUserId);
+    }
+
+    @Patch(':id/participants/:userId/role')
+    updateParticipantRole(
+      @Request() req,
+      @Param('id', ParseIntPipe) roomId: number,
+      @Param('userId', ParseIntPipe) targetUserId: number,
+      @Body() updateRoleDto: UpdateRoleDto,
+    ) {
+      return this.chatRoomService.updateParticipantRole(
+        req.user.id,
+        roomId,
+        targetUserId,
+        updateRoleDto.role,
+      );
+    }
 }
 
