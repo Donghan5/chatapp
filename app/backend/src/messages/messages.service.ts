@@ -102,5 +102,36 @@ export class MessageService {
       { status: MessageStatus.READ, readAt: new Date() }
     );
   }
+
+  async searchMessages(userId: number, query: string, roomId?: number): Promise<Message[]> {
+    const qb = this.messageRepository.createQueryBuilder('msg')
+      .innerJoin('msg.room', 'room')
+      .innerJoin('room.participants', 'p', 'p.userId = :userId', { userId })
+      .where("msg.search_vector @@ plainto_tsquery('english', :query)", { query })
+      .orderBy("ts_rank(msg.search_vector, plainto_tsquery('english', :query))", 'DESC')
+      .addOrderBy('msg.createdAt', 'DESC')
+      .take(50);
+
+    if (roomId) {
+      qb.andWhere('msg.roomId = :roomId', { roomId });
+    }
+
+    return qb.getMany();
+  }
+
+
+  async editMessage(userId: number, messageId: number, newContent: string): Promise<Message> {
+      const message = await this.messageRepository.findOne({
+          where: { id: messageId, senderId: userId },
+      });
+
+      if (!message) {
+          throw new NotFoundException('Message not found or you are not the sender');
+      }
+
+      message.content = newContent;
+      // searchVector will be updated by the trigger
+      return this.messageRepository.save(message);
+  }
 }
 

@@ -61,4 +61,23 @@ export const chatApi = {
     leaveChatRoom: async (roomId: string, userId: number): Promise<void> => {
          await client.delete(`/chat-rooms/${roomId}/leave`);
     },
+
+    searchMessages: async (query: string, roomId?: string): Promise<Message[]> => {
+        const params = new URLSearchParams({ q: query });
+        if (roomId) {
+            params.append('roomId', roomId);
+        }
+
+        const response = await client.get<Message[]>(`/messages/search?${params}`);
+        return response.data;
+    },
+
+    editMessage: async (messageId: string, content: string): Promise<Message> => {
+        const response = await client.patch<Message>(`/messages/${messageId}`, { content });
+        return response.data;
+    },
+
+    deleteMessage: async (messageId: string): Promise<void> => {
+        await client.delete(`/messages/${messageId}`);
+    },
 };

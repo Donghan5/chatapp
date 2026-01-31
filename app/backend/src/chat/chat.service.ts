@@ -3,7 +3,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import Redis from 'ioredis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Messages } from '../messages/entities/messages.entity';
+import { Message } from '../messages/entities/messages.entity';
 /*
 	Role of this chat service
 	1. Connection between gateway and kafka
@@ -17,8 +17,8 @@ export class ChatService {
 
   constructor(
     @Inject('KAFKA_SERVICE') private kafkaClient: ClientKafka,
-    @InjectRepository(Messages)
-    private messagesRepository: Repository<Messages>,
+    @InjectRepository(Message)
+    private messagesRepository: Repository<Message>,
   ) {
     this.redisClient = new Redis({
       host: 'localhost',

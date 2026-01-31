@@ -4,7 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { ChatController } from './chat.controller';
-import { Messages } from '../messages/entities/messages.entity';
+import { Message } from '../messages/entities/messages.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
@@ -13,7 +13,7 @@ import { MessageModule } from '../messages/messages.module';
 @Module({
     imports: [
         ConfigModule,
-        TypeOrmModule.forFeature([Messages, ChatRoom, User]),
+        TypeOrmModule.forFeature([Message, ChatRoom, User]),
         AuthModule,
         MessageModule,
         ClientsModule.register([

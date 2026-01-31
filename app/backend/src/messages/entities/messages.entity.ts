@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Index } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
 
@@ -16,6 +16,14 @@ export class Message {
 
   @Column()
   content: string;
+
+  @Index('idx_messages_search', { synchronize: false })
+  @Column({
+    type: 'tsvector',
+    nullable: true,
+    select: false,
+  })
+  searchVector: string;
 
   @Column({
     type: 'enum',

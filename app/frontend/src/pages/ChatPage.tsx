@@ -1,16 +1,59 @@
-import React, { FormEvent } from "react";
+import{ useState, FormEvent } from "react";
 import { useChat } from "../features/chat/hooks/useChat";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { User } from "../../../../packages/common-types/src/user";
 import { SideBar } from "../components/organisms/SideBar";
+import { GroupSettingsModal } from "../components/organisms/GroupSettingsModal";
+import { Message } from '../features/chat/types';
+import { chatApi } from '../features/chat/api/chatApi';
 
 export default function ChatPage({ user }: { user: User }) {
-    const { rooms, messages, activeRoomId, selectRoom, sendMessage, isLoading, createRoom } =
+    const { 
+        rooms, 
+        messages, 
+        activeRoomId, 
+        selectRoom, 
+        sendMessage, 
+        isLoading, 
+        createRoom,
+        loadMessages
+    } =
         useChat();
 
     const { logout } = useAuth(); // Get logout function
 
-    const [inputMessage, setInputMessage] = React.useState("");
+    const [inputMessage, setInputMessage] = useState("");
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<Message[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState("");
+
+    const handleEditMessages = async (messageId: string) => {
+        if (!editContent.trim()) return;
+        await chatApi.editMessage(messageId, editContent);
+        setEditingMessageId(null);
+        setEditContent("");
+        if (activeRoomId) await loadMessages(activeRoomId);
+    }
+
+    const handleDeleteMessages = async (messageId: string) => {
+        if (!confirm("Are you sure you want to delete this message?")) return;
+        await chatApi.deleteMessage(messageId);
+        if (activeRoomId) await loadMessages(activeRoomId);
+    }
+
+    const handleSearch = async () => {
+        if (searchQuery.trim().length < 2) return;
+        setIsSearching(true);
+        try {
+            const result = await chatApi.searchMessages(searchQuery, activeRoomId || undefined)
+            setSearchResults(result);
+        } finally {
+            setIsSearching(false);
+        }
+    }
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -81,7 +124,26 @@ export default function ChatPage({ user }: { user: User }) {
                                     </>
                                 );
                             })()}
+                            <div className="ml-auto">
+                                <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-gray-200 rounded-full">
+                                    ⚙️
+                                </button>
+                            </div>
                         </header>
+
+                        <div className="flex gap-2 ml-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                placeholder="Search ..."
+                                className="px-2 py-1 text-sm border rounded"
+                            />
+                            <button onClick={handleSearch} className="p-2 hover:bg-gray-200 rounded-full">
+                                🔍
+                            </button>
+                        </div>
 
                         <section className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 z-10">
                             {messages.map((msg, index) => {
@@ -106,6 +168,12 @@ export default function ChatPage({ user }: { user: User }) {
                                                     })
                                                     : ""}
                                             </span>
+                                            {isMe && (
+                                                <div className="flex gap-1 text-xs opacity-0 group-hover:opacity-100">
+                                                    <button onClick={() => handleEditMessages(msg.id)}>Edit</button>
+                                                    <button onClick={() => handleDeleteMessages(msg.id)}>Delete</button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -146,6 +214,20 @@ export default function ChatPage({ user }: { user: User }) {
                         </div>
                     </div>
                 )}
+
+                {activeRoomId && rooms.find(r => r.id === activeRoomId) && (
+                    <GroupSettingsModal
+                        isOpen={isSettingsOpen}
+                        onClose={() => setIsSettingsOpen(false)}
+                        room={rooms.find(r => r.id === activeRoomId)!}
+                        currentUser={user}
+                        onUpdateRoom={() => {
+                            window.location.reload(); // Simple refresh --> after elaborate refresh method
+                        }}
+                    />
+                )}
+
+                
             </main>
         </div>
     );

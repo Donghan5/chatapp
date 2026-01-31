@@ -8,7 +8,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Messages } from '../../messages/entities/messages.entity';
+import { Message } from '../../messages/entities/messages.entity';
 import { RoomParticipant } from './room-participant.entity';
 
 @Entity('chat_rooms')
@@ -46,7 +46,7 @@ export class ChatRoom {
   @OneToMany(() => RoomParticipant, (roomParticipant) => roomParticipant.room)
   participants: RoomParticipant[];
 
-  @OneToMany(() => Messages, (message) => message.room)
-  messages: Messages[];
+  @OneToMany(() => Message, (message) => message.room)
+  messages: Message[];
 }
 
