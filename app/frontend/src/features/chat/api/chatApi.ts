@@ -1,3 +1,4 @@
+import { User } from "@chatapp/common-types";
 import { client } from "../../../lib/axios";
 import type { ChatRoom, Message, SendMessageRequest } from "../types";
 
@@ -79,5 +80,28 @@ export const chatApi = {
 
     deleteMessage: async (messageId: string): Promise<void> => {
         await client.delete(`/messages/${messageId}`);
+    },
+
+    searchUsers: async (username: string): Promise<User[]> => {
+        const response = await client.get<User[]>(`/users/search?q=${username}`);
+        return response.data;
+    },
+
+    inviteUser: async (roomId: string, userId: number): Promise<void> => {
+        await client.post(`/chat-rooms/${roomId}/invite`, { targetUserId: userId });
+    },
+
+    uploadFile: async (roomId: string, file: File): Promise<Message> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('roomId', roomId);
+        const response = await client.post<Message>('/messages/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+
+    addReaction: async (messageId: string, emoji: string): Promise<void> => {
+        await client.post(`/messages/${messageId}/reactions`, { emoji });
     },
 };

@@ -2,6 +2,11 @@ import { User } from "@chatapp/common-types";
 
 export type MessageStatus = 'sent' | 'delivered' | 'read' | 'deleted';
 
+export interface Reaction {
+	id: number;
+	emoji: string;
+	userId: number;
+}
 export interface RoomParticipant {
     userId: number;
     roomId: number;
@@ -27,6 +32,10 @@ export interface Message {
 	createdAt: string;
 	roomId: string;
 	status?: MessageStatus;
+	fileUrl?: string;
+	fileName?: string;
+	fileType?: string;
+	reactions?: Reaction[];
 }
 
 export interface SendMessageRequest {

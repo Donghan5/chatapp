@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Index, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
+import { Reaction } from './reaction.entity';
 
 export enum MessageStatus {
   SENT = 'sent',
@@ -52,4 +53,20 @@ export class Message {
 
   @Column({ type: 'timestamp', nullable: true })
   readAt: Date;
+
+  // File/image upload
+  @Column({ nullable: true })
+  fileUrl: string;
+
+  @Column({ nullable: true })
+  fileName: string;
+
+  @Column({ nullable: true })
+  fileType: string; // 'image' | 'file'
+
+  @Column({ nullable: true })
+  mimeType: string;
+
+  @OneToMany(() => Reaction, reaction => reaction.message)
+  reactions: Reaction[];
 }

@@ -10,12 +10,15 @@ import { Message, MessageStatus } from './entities/messages.entity';
 import { CreateMessageDto } from './dto/create-messages.dto';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
+import { Reaction } from './entities/reaction.entity';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
+    @InjectRepository(Reaction)
+    private reactionRepository: Repository<Reaction>,
   ) {}
 
   async createMessage(createMessageDto: CreateMessageDto) {
@@ -132,6 +135,50 @@ export class MessageService {
       message.content = newContent;
       // searchVector will be updated by the trigger
       return this.messageRepository.save(message);
+  }
+
+  async createFileMessage(
+      senderId: number,
+      roomId: number,
+      fileUrl: string,
+      fileName: string,
+      fileType: 'image' | 'file',
+      mimeType: string,
+  ): Promise<Message> {
+      const message = this.messageRepository.create({
+          senderId,
+          roomId,
+          content: fileName, // Use filename as content
+          fileUrl,
+          fileName,
+          fileType,
+          mimeType,
+      });
+      return this.messageRepository.save(message);
+  }
+
+  async addReaction(
+    userId: number, 
+    messageId: number,
+    emoji: string
+  ): Promise<Reaction | null> {
+    const existing = await this.reactionRepository.findOne({
+      where: { userId, messageId, emoji },
+    });
+
+    if (existing) {
+      await this.reactionRepository.delete(existing.id);
+      return null;
+    }
+    const reaction = this.reactionRepository.create({ userId, messageId, emoji });
+    return this.reactionRepository.save(reaction);
+  }
+
+  async getMessageReaction(messageId: number): Promise<Reaction[]> {
+    return this.reactionRepository.find({
+      where: { messageId },
+      relations: ['user'],
+    });
   }
 }
 

@@ -8,3 +8,4 @@ dist
 app/frontend/.env
 app/backend/.env
 .aider*
+k8s/secrets.yaml

@@ -2,7 +2,10 @@ import { Controller, Get, Post, Query, Body, Request, BadRequestException, Parse
 import { MessageService } from "./messages.service";
 import { CreateMessageDto } from "./dto/create-messages.dto";
 import { EventPattern, Payload } from "@nestjs/microservices";
-
+import { UseInterceptors, UploadedFile } from '@nestjs/common';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from "@nestjs/platform-express";
+import { extname } from 'path';
 @Controller('messages')
 export class MessageController {
 	constructor(private readonly messageService: MessageService) { }
@@ -59,5 +62,42 @@ export class MessageController {
 			@Param('id', ParseIntPipe) id: number,
 	) {
 			return this.messageService.deleteMessage(req.user.id, id);
+	}
+
+	@Post(':id/reactions')
+	addReaction(
+		@Request() req,
+		@Param('id', ParseIntPipe) messageId: number,
+		@Body('emoji') emoji: string
+	) {
+		return this.messageService.addReaction(req.user.id, messageId, emoji);
+	}
+
+
+	@Post('upload')
+	@UseInterceptors(FileInterceptor('file', {
+		storage: diskStorage({
+			destination: './uploads/messages',
+			filename: (req, file, cb) => {
+				const uniqueName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+				cb(null, `${uniqueName}${extname(file.originalname)}`);
+			}
+		}),
+		limits: { fileSize: 10 * 1024 * 1024 },
+	}))
+	async uploadFile(
+		@UploadedFile() file: Express.Multer.File,
+		@Request() req,
+		@Body('roomId') roomId: string,
+	) {
+		const isImage = file.mimetype.startsWith('image/');
+		return this.messageService.createFileMessage(
+			req.user.id,
+			parseInt(roomId),
+			`/uploads/messages/${file.filename}`,
+			file.originalname,
+			isImage ? 'image' : 'file',
+			file.mimetype,
+		);
 	}
 }

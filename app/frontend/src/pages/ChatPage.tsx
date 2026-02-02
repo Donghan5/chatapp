@@ -1,4 +1,4 @@
-import{ useState, FormEvent } from "react";
+import{ useState, FormEvent, useRef } from "react";
 import { useChat } from "../features/chat/hooks/useChat";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { User } from "../../../../packages/common-types/src/user";
@@ -6,6 +6,8 @@ import { SideBar } from "../components/organisms/SideBar";
 import { GroupSettingsModal } from "../components/organisms/GroupSettingsModal";
 import { Message } from '../features/chat/types';
 import { chatApi } from '../features/chat/api/chatApi';
+
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
 export default function ChatPage({ user }: { user: User }) {
     const { 
@@ -29,6 +31,17 @@ export default function ChatPage({ user }: { user: User }) {
     const [isSearching, setIsSearching] = useState(false);
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState("");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showReactionPicker, setShowReactionPicker] = useState<string|null>(null);
+
+    const handleFileUpload = async() => {
+        if (!selectedFile || !activeRoomId) return;
+    
+        await chatApi.uploadFile(activeRoomId, selectedFile);
+        setSelectedFile(null);
+        if (activeRoomId) await loadMessages(activeRoomId);
+    }
 
     const handleEditMessages = async (messageId: string) => {
         if (!editContent.trim()) return;
@@ -145,13 +158,25 @@ export default function ChatPage({ user }: { user: User }) {
                             </button>
                         </div>
 
+                        {searchResults.length > 0 && (
+                            <div className="bg-white border-b p-2 max-h-40 overflow-y-auto z-10">
+                                <h4 className="text-xs font-semibold mb-1">Search Results</h4>
+                                {searchResults.map((msg) => (
+                                    <div key={msg.id} className="p-1 text-sm hover:bg-gray-100 rounded">
+                                        {msg.content}
+                                    </div>
+                                ))}
+                                <button onClick={() => setSearchResults([])} className="text-xs text-gray-500">Clear</button>
+                            </div>
+                        )}
+
                         <section className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 z-10">
                             {messages.map((msg, index) => {
                                 const isMe = Number(msg.senderId) === Number(user.id);
                                 return (
                                     <div
                                         key={index}
-                                        className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                                        className={`group flex ${isMe ? "justify-end" : "justify-start"}`}
                                     >
                                         <div
                                             className={`max-w-xs md:max-w-md px-4 py-2 rounded-lg shadow-sm text-sm relative ${isMe
@@ -159,7 +184,20 @@ export default function ChatPage({ user }: { user: User }) {
                                                 : "bg-white text-gray-800 rounded-tl-none"
                                                 }`}
                                         >
-                                            <p>{msg.content}</p>
+                                            {editingMessageId === msg.id ? (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={editContent}
+                                                        onChange={(e) => setEditContent(e.target.value)}
+                                                        className="flex-1 px-2 py-1 text-sm border rounded"
+                                                    />
+                                                    <button onClick={() => handleEditMessages(msg.id)} className="text-blue-500 text-xs">Save</button>
+                                                    <button onClick={() => setEditingMessageId(null)} className="text-gray-500 text-xs">Cancel</button>
+                                                </div>
+                                            ) : (
+                                                <p>{msg.content}</p>
+                                            )}
                                             <span className="text-[10px] text-gray-500 block text-right mt-1 opacity-70">
                                                 {msg.createdAt
                                                     ? new Date(msg.createdAt).toLocaleTimeString([], {
@@ -170,10 +208,50 @@ export default function ChatPage({ user }: { user: User }) {
                                             </span>
                                             {isMe && (
                                                 <div className="flex gap-1 text-xs opacity-0 group-hover:opacity-100">
-                                                    <button onClick={() => handleEditMessages(msg.id)}>Edit</button>
+                                                    <button onClick={() => { setEditingMessageId(msg.id); setEditContent(msg.content); }}>Edit</button>
                                                     <button onClick={() => handleDeleteMessages(msg.id)}>Delete</button>
                                                 </div>
                                             )}
+                                            {msg.fileUrl && (
+                                                msg.fileType === 'image' ? (
+                                                    <img src={msg.fileUrl} alt="" className="max-w-xs mt-2 rounded" />
+                                                ) : (
+                                                    <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">Download {msg.fileName}</a>
+                                                )
+                                            )}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
+                                                    className="text-xs opacity-0 group-hover:opacity-100"   
+                                                >
+                                                    😀
+                                                </button>
+                                                {showReactionPicker === msg.id && (
+                                                    <div className="absolute bottom-full left-0 bg-white shadow-lg rounded-lg p-1 flex gap-1">
+                                                        {EMOJIS.map(emoji => (
+                                                            <button
+                                                                key={emoji}
+                                                                onClick={() => {chatApi.addReaction(msg.id, emoji); setShowReactionPicker(null); }}
+                                                                className="hover:bg-gray-100 p-1 rounded"
+                                                            >
+                                                                {emoji}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {msg.reactions && msg.reactions.length > 0 && (
+                                                <div className="flex gap-1 mt-1">
+                                                    {Object.entries(
+                                                        msg.reactions.reduce((acc, r) => {
+                                                            acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                                                            return acc;
+                                                        }, {} as Record<string, number>)
+                                                    ).map(([emoji, count]) => (
+                                                        <span key={emoji} className="text-xs bg-gray-100 px-1 rounded">{emoji} {count}</span>
+                                                    ))}
+                                                </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -201,6 +279,23 @@ export default function ChatPage({ user }: { user: User }) {
                                         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                                     </svg>
                                 </button>
+
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                    className="hidden"
+                                />
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-gray-200 rounded">
+                                    📎
+                                </button>
+                                {selectedFile && (
+                                    <div className="flex items-center gap-2 bg-blue-50 px-2 py-1 rounded">
+                                        <span className="text-sm truncate max-w-32">{selectedFile.name}</span>
+                                        <button type="button" onClick={handleFileUpload} className="text-blue-500">Send</button>
+                                        <button type="button" onClick={() => setSelectedFile(null)} className="text-gray-500">x</button>
+                                    </div>
+                                )}
                             </form>
                         </footer>
                     </>
