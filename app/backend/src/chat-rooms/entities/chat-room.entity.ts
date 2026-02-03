@@ -8,7 +8,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Message } from '../../messages/entities/messages.entity';
+import { Message } from '../../messages/entities/message.entity';
 import { RoomParticipant } from './room-participant.entity';
 
 @Entity('chat_rooms')

@@ -4,7 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { ChatController } from './chat.controller';
-import { Message } from '../messages/entities/messages.entity';
+import { Message } from '../messages/entities/message.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';

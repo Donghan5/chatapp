@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { Message, MessageStatus } from './entities/messages.entity';
+import { Message, MessageStatus } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-messages.dto';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';

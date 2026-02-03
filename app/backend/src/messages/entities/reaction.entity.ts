@@ -5,7 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn
 } from 'typeorm';
-import { User } from '@chatapp/common-types';
+import { User } from '../../users/entities/user.entity';
 import { Message } from './message.entity';
 
 @Entity('reaction')

@@ -3,7 +3,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import Redis from 'ioredis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Message } from '../messages/entities/messages.entity';
+import { Message } from '../messages/entities/message.entity';
 /*
 	Role of this chat service
 	1. Connection between gateway and kafka

@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ChatRoom } from '../../chat-rooms/entities/chat-room.entity';
-import { Message } from '../../messages/entities/messages.entity';
+import { Message } from '../../messages/entities/message.entity';
 import { RoomParticipant } from '../../chat-rooms/entities/room-participant.entity';
 import { Friend } from '../../friends/entities/friend.entity';
 

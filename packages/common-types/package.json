@@ -10,8 +10,6 @@
   },
   "scripts": {
     "build": "tsc"
-  },
-  "dependencies": {
-    "@chatapp/common-types": "^1.0.0"
   }
+
 }
