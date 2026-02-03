@@ -14,7 +14,7 @@
       "@chatapp/common-types": ["../../packages/common-types/src/index.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "postcss.config.js"],
   "exclude": ["node_modules"],
   "references": [
     { "path": "../../packages/common-types" }
