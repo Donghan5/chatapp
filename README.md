@@ -16,7 +16,7 @@ This project is a full-stack chat application featuring a decoupled frontend and
 
 ### Backend (`app/backend`)
 - **Runtime**: Node.js
-- **Framework**: Fastify
+- **Framework**: NestJS
 - **Language**: TypeScript
 - **Real-time**: WebSocket (ws / Socket.io)
 - **Database**: PostgreSQL
@@ -36,7 +36,7 @@ This is a monorepo workspace managed by npm:
 .
 ├── app/
 │   ├── frontend/       # React application
-│   └── backend/        # Node.js/Fastify API & WebSocket server
+│   └── backend/        # Node.js/NestJS API & WebSocket server
 ├── packages/
 │   └── common-types/   # Shared TypeScript definitions
 ├── k8s/                # Kubernetes manifests
