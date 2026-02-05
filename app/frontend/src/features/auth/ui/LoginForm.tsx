@@ -17,13 +17,11 @@ export const LoginForm = () => {
   };
 
   const handleGoogleClick = () => {
-    const apiUrl = import.meta.env.FRONTEND_URL || "http://localhost:8080";
+    const targetUrl = "/api/auth/google"
     
-    console.log('apiUrl:', apiUrl);
-
-    window.location.href = `${apiUrl}/api/auth/google`;
+    console.log('Redirecting to:', targetUrl);
     
-    console.log('Redirecting to:', `${apiUrl}/api/auth/google`);
+    window.location.href = targetUrl;
   }
 
   return (
