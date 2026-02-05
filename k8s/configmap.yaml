@@ -6,5 +6,7 @@ data:
   DB_HOST: postgres-service
   DB_PORT: "5432"
   KAFKA_BROKERS: kafka-service:9092
-  BACKEND_PORT: "5173"
-  FRONTEND_URL: "http://localhost:5173"
+  BACKEND_PORT: "3000"
+  FRONTEND_URL: "http://localhost:8080"
+  REDIS_HOST: redis-service
+  REDIS_PORT: "6379"

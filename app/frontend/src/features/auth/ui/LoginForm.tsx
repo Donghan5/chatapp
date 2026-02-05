@@ -17,8 +17,10 @@ export const LoginForm = () => {
   };
 
   const handleGoogleClick = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.FRONTEND_URL || "http://localhost:8080";
     
+    console.log('apiUrl:', apiUrl);
+
     window.location.href = `${apiUrl}/api/auth/google`;
     
     console.log('Redirecting to:', `${apiUrl}/api/auth/google`);
