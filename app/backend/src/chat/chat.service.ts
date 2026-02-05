@@ -20,9 +20,12 @@ export class ChatService {
     @InjectRepository(Message)
     private messagesRepository: Repository<Message>,
   ) {
+    const redisHost = process.env.REDIS_HOST || 'localhost';
+    const redisPort = Number(process.env.REDIS_PORT) || 6379;
+    console.log(`[ChatService] Connecting to Redis at ${redisHost}:${redisPort}`);
     this.redisClient = new Redis({
-      host: 'localhost',
-      port: 6379,
+      host: redisHost,
+      port: redisPort,
     });
   }
 
