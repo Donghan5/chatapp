@@ -66,11 +66,12 @@ export class UsersService {
 		return user;
 	}
 
-	async searchUsers(username: string): Promise<User[]> {
+	async searchUsers(query: string): Promise<User[]> {
 		const users = await this.userRepository.find({
-			where: {
-				username: Like(`%${username}%`),
-			},
+			where: [
+				{ username: Like(`%${query}%`) },
+				{ email: Like(`%${query}%`) },
+			],
 			select: ['id', 'username', 'email', 'avatarUrl', 'createdAt', 'updatedAt'],
 		});
 		return users;

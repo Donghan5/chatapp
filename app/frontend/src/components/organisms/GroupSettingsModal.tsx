@@ -128,7 +128,7 @@ export const GroupSettingsModal = ({
                 value={inviteUsername}
                 onChange={(e) => setInviteUsername(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchUsers()}
-                placeholder="Search username..."
+                placeholder="Search email or username..."
                 className="flex-1 px-3 py-2 border rounded-md"
               />
               <button onClick={handleSearchUsers} className="px-3 py-2 bg-gray-100 rounded-md">🔍</button>
