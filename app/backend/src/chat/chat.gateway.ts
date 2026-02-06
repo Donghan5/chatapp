@@ -133,6 +133,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const tempMessage = {
 			content: payload.content,
+			senderId: user.sub,
 			sender: { id: user.sub, email: user.email },
 			createdAt: new Date(),
 			roomId: payload.roomId,
