@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { LoginForm } from '../features/auth/ui/LoginForm';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
 
 export const LoginPage = () => {
@@ -27,7 +27,10 @@ export const LoginPage = () => {
 				<LoginForm />
 
 				<p className="text-center text-sm text-gray-400 mt-6">
-					Don't have an account? <span className="text-blue-600 hover:underline">Sign up</span>
+					Don't have an account?{' '}
+					<Link to="/signup" className="text-blue-600 hover:underline">
+						Sign up
+					</Link>
 				</p>
 			</div>
 		</div>

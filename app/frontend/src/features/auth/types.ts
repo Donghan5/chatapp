@@ -7,7 +7,7 @@ export interface AuthResponse {
 
 export interface LoginRequest {
 	email: string;
-	pass: string;
+	password: string;
 }
 
 export interface GoogleLoginRequest {
@@ -15,8 +15,7 @@ export interface GoogleLoginRequest {
 }
 
 export interface RegisterRequest {
-	firstName: string;
-	lastName: string;
+	username: string;
 	email: string;
-	pass: string;
+	password: string;
 }

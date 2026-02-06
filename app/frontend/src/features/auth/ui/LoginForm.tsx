@@ -6,14 +6,14 @@ import { Button } from "../../../components/atoms/Button";
 export const LoginForm = () => {
   const { login, isLoading, error } = useAuth();
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (!email || !pass) return;
+    if (!email || !password) return;
 
-    login({ email, pass });
+    login({ email, password });
   };
 
   const handleGoogleClick = () => {
@@ -40,8 +40,8 @@ export const LoginForm = () => {
       <Input
         label="Password"
         type="password"
-        value={pass}
-        onChange={(e) => setPass(e.target.value)}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
 
       {error && (
@@ -54,7 +54,7 @@ export const LoginForm = () => {
         type="submit"
         size="lg"
         variant="primary"
-        disabled={isLoading || !email || !pass}
+        disabled={isLoading || !email || !password}
         className="w-full mt-2 shadow-md"
       >
         {isLoading ? "Logging in..." : "Login"}

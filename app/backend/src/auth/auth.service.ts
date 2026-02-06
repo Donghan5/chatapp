@@ -47,18 +47,18 @@ export class AuthService {
   async login(user: any) {
     const payload = { sub: user.id, email: user.email };
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
       user: user,
     };
   }
 
   // post /register using user service (this is to local user or admin(maybe))
   async register(registerDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const hashedPassword = await bcrypt.hash(registerDto.passwordHash, 10);
 
     return this.userService.createUser({
       ...registerDto,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       provider: 'local',
     });
   }

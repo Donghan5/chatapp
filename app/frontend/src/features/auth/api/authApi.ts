@@ -24,7 +24,11 @@ export const authApi = {
   },
 
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const response = await client.post<AuthResponse>("/auth/register", data);
+    const response = await client.post<AuthResponse>("/auth/register", {
+        username: data.username,
+        email: data.email,
+        passwordHash: data.password,
+    });
     return response.data;
   },
 };
