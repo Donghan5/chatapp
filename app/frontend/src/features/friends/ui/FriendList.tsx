@@ -80,14 +80,14 @@ export const FriendList = ({ onStartChat, isUserOnline }: FriendListProps) => {
                     <div className="relative">
                       <Avatar
                         src={friend.avatarUrl || null}
-                        name={friend.name || "?"}
+                        name={friend.username || "?"}
                         size="md"
                       />
                       {isUserOnline && isUserOnline(Number(friend.id)) && <div className="absolute bottom-0 right-0 w-3 h-3 bg-gray-300 border-2 border-white rounded-full"></div>}
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-sm font-medium text-gray-900 truncate">
-                        {friend.name}
+                        {friend.username}
                       </h4>
                       <p className="text-xs text-gray-500 truncate">
                         Click to chat

@@ -58,7 +58,7 @@ export class MessageService {
       .createQueryBuilder('message')
       .leftJoinAndSelect('message.sender', 'sender')
       .where('message.roomId = :roomId', { roomId })
-      .andWhere('message.isDeleted = false')
+      .andWhere('message.status != :deletedStatus', { deletedStatus: MessageStatus.DELETED })
       .orderBy('message.createdAt', 'DESC')
       .take(limit);
 

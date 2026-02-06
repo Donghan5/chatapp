@@ -19,10 +19,10 @@ export const FriendRequestItem = ({
 }: FriendRequestItemProps) => {
   return (
     <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-      <Avatar src={user.avatarUrl} name={user.name || "?"} size="md" />
+      <Avatar src={user.avatarUrl} name={user.username || "?"} size="md" />
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-gray-900 truncate">
-          {user.name || "Unknown User"}
+          {user.username || "Unknown User"}
         </h3>
         <p className="text-xs text-gray-500 truncate">{user.email}</p>
       </div>

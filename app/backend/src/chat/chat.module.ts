@@ -8,27 +8,32 @@ import { Message } from '../messages/entities/message.entity';
 import { ChatRoom } from '../chat-rooms/entities/chat-room.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MessageModule } from '../messages/messages.module';
+
 @Module({
     imports: [
         ConfigModule,
         TypeOrmModule.forFeature([Message, ChatRoom, User]),
         AuthModule,
         MessageModule,
-        ClientsModule.register([
+        ClientsModule.registerAsync([
             {
                 name: 'KAFKA_SERVICE',
-                transport: Transport.KAFKA,
-                options: {
-                    client: {
-                        clientId: 'chat-app',
-                        brokers: ['localhost:9092'],
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    transport: Transport.KAFKA,
+                    options: {
+                        client: {
+                            clientId: 'chat-app',
+                            brokers: [configService.get('KAFKA_BROKERS') || 'localhost:9092'],
+                        },
+                        consumer: {
+                            groupId: 'chat-producer-group',
+                        },
                     },
-                    consumer: {
-                        groupId: 'chat-producer-group',
-                    },
-                },
+                }),
             },
         ]),
     ],

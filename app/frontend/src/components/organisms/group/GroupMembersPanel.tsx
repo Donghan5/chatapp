@@ -32,7 +32,7 @@ export const GroupMembersPanel = ({
     setIsSearching(true);
     try {
       const users = await userApi.searchByUsername(query);
-      const existingIds = new Set(room.participants?.map((p) => p.id));
+      const existingIds = new Set(room.participants?.map((p) => p.user.id));
       setSearchResults(users.filter((u) => !existingIds.has(u.id)));
     } catch (error) {
       console.error(error);
@@ -79,8 +79,8 @@ export const GroupMembersPanel = ({
                 onClick={() => handleAddMember(Number(user.id))}
                 className="p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
               >
-                <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-                <span className="text-sm">{user.name}</span>
+                <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                <span className="text-sm">{user.username}</span>
               </div>
             ))}
           </div>
@@ -93,14 +93,14 @@ export const GroupMembersPanel = ({
       </h3>
       <div className="space-y-2">
         {room.participants?.map((p) => {
-          const isCreator = room.createdBy?.id === p.id;
+          const isCreator = room.createdBy?.id === p.user.id;
           return (
-            <div key={p.id} className="flex items-center justify-between group">
+            <div key={p.user.id} className="flex items-center justify-between group">
               <div className="flex items-center gap-3">
-                <Avatar src={p.avatarUrl} name={p.name} size="sm" />
+                <Avatar src={p.user.avatarUrl} name={p.user.username} size="sm" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    {p.name} {p.id === currentUser.id && "(You)"}
+                    {p.user.username} {p.user.id === currentUser.id && "(You)"}
                   </p>
                   {isCreator && (
                     <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
@@ -110,9 +110,9 @@ export const GroupMembersPanel = ({
                 </div>
               </div>
 
-              {isAdmin && p.id !== currentUser.id && (
+              {isAdmin && p.user.id !== currentUser.id && (
                 <button
-                  onClick={() => handleRemoveMember(Number(p.id))}
+                  onClick={() => handleRemoveMember(Number(p.user.id))}
                   className="text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
                 >
                   Remove

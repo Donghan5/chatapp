@@ -83,7 +83,7 @@ export const chatApi = {
     },
 
     searchUsers: async (username: string): Promise<User[]> => {
-        const response = await client.get<User[]>(`/users/search?q=${username}`);
+        const response = await client.get<User[]>(`/users/search?username=${username}`);
         return response.data;
     },
 

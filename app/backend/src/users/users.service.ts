@@ -71,7 +71,7 @@ export class UsersService {
 			where: {
 				username: Like(`%${username}%`),
 			},
-			select: ['id', 'username', 'avatarUrl', 'createdAt', 'updatedAt'],
+			select: ['id', 'username', 'email', 'avatarUrl', 'createdAt', 'updatedAt'],
 		});
 		return users;
 	}

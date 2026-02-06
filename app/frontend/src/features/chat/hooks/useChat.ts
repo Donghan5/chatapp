@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { socket } from "../../../lib/socket";
+import { socket, initSocketAuth } from "../../../lib/socket";
 import { chatApi } from "../api/chatApi";
 import type { ChatRoom, Message, MessageStatus } from "../types";
 
@@ -11,6 +11,7 @@ export const useChat = () => {
     const [typingUsers, setTypingUsers] = useState<Map<number, string>>(new Map());
 
     useEffect(() => {
+        initSocketAuth();
         if (!socket.connected) {
             socket.connect();
         }

@@ -137,7 +137,7 @@ export const GroupSettingsModal = ({
               <div className="border rounded-md max-h-32 overflow-y-auto">
                 {searchResults.map(user => (
                   <div key={user.id} className="flex justify-between p-2 hover:bg-gray-50">
-                    <span>{user.name}</span>
+                    <span>{user.username}</span>
                     <button onClick={() => handleInviteUser(Number(user.id))} className="text-blue-500 text-sm">+ Add</button>
                   </div>
                 ))}
@@ -156,9 +156,9 @@ export const GroupSettingsModal = ({
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                     {member.avatarUrl ? (
                       <img src={member.avatarUrl} alt="" className="w-full h-full object-cover rounded-full" />
-                    ) : member.name?.[0] || '?'}
+                    ) : member.username?.[0] || '?'}
                   </div>
-                  <span className="text-sm">{member.name}</span>
+                  <span className="text-sm">{member.username}</span>
                   {memberRoles[Number(member.id)] === 'admin' && (
                     <span className="text-xs text-blue-500">Admin</span>
                   )}

@@ -38,6 +38,14 @@ export const SideBar = ({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const getRoomDisplayName = (room: ChatRoom, currentUserId: number): string => {
+    if (room.isGroup) {
+      return room.name;
+    }
+    // For DM chats, show the other participant's name
+    const otherParticipant = room.participants?.find(p => p.user.id !== String(currentUserId));
+    return otherParticipant?.user.name || otherParticipant?.user.email?.split('@')[0] || room.name;
+  };
   useOutsideClick(menuRef, () => {
     if (isMenuOpen) setIsMenuOpen(false);
   });
@@ -145,7 +153,7 @@ export const SideBar = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-gray-900 font-medium truncate">
-                      {room.name}
+                      {getRoomDisplayName(room, Number(user.id))}
                     </h3>
                     <span className="text-xs text-gray-500">
                       {room.updatedAt

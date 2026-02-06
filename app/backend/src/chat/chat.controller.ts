@@ -12,6 +12,11 @@ export class ChatController {
     async handleMessageCreate(@Payload() data: any) {
         console.log(`[Consumer] Received from Kafka: ${JSON.stringify(data)}`);
 
+        if (!data.senderId) {
+            console.warn(`[Consumer] Skipping message without senderId: ${JSON.stringify(data)}`);
+            return;
+        }
+        
         const savedData = await this.messageService.saveMessage(
             data.content,
             data.roomId,
