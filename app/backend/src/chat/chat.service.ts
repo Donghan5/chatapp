@@ -56,7 +56,7 @@ export class ChatService {
     await this.redisClient.lpush(redisKey, JSON.stringify(messageData));
     await this.redisClient.ltrim(redisKey, 0, 99); // Keep only the latest 100 messages
 
-    this.kafkaClient.emit('chat.message.create', messageData);
+    this.kafkaClient.emit('chat.send', messageData);
 
     console.log(`[Producer] Sent to Kafka & Redis: ${content}`);
 

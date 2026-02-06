@@ -117,6 +117,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) {
 		const user = client.data.user;
 
+		console.log('[sendMessage] User data:', JSON.stringify(user));
+
+		if (!user?.sub) {
+			console.warn('[sendMessage] User sub is undefined, cannot send message');
+			return;
+		}
+
 		this.kafkaClient.emit('chat.send', {
 			roomId: payload.roomId,
 			content: payload.content,
@@ -128,6 +135,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			content: payload.content,
 			sender: { id: user.sub, email: user.email },
 			createdAt: new Date(),
+			roomId: payload.roomId,
 		};
 
 		this.server.to(`room-${payload.roomId}`).emit('newMessage', tempMessage);

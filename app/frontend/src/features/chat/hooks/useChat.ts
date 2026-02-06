@@ -76,9 +76,10 @@ export const useChat = () => {
 
         try {
             const msgs = await chatApi.getMessages(roomId);
-            setMessages(msgs);
+            setMessages(Array.isArray(msgs) ? msgs : []);
         } catch (error) {
             console.error(error);
+            setMessages([]);
         } finally {
             setIsLoading(false);
         }

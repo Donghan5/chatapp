@@ -16,10 +16,16 @@ export class ChatController {
             console.warn(`[Consumer] Skipping message without senderId: ${JSON.stringify(data)}`);
             return;
         }
+
+        const roomId = Number(data.roomId);
+        if (isNaN(roomId)) {
+            console.warn(`[Consumer] Skipping message without roomId: ${JSON.stringify(data)}`);
+            return;
+        }
         
         const savedData = await this.messageService.saveMessage(
             data.content,
-            data.roomId,
+            roomId,
             data.senderId,
         );
 

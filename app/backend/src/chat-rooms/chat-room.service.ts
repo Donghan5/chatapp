@@ -37,7 +37,6 @@ export class ChatRoomService {
             const manager = queryRunner.manager;
 
             let roomName = createChatRoomDto.name;
-
             if (!roomName) {
                 const creator = await manager.findOne(User, { where: { id: creatorId } });
                 const names = [creator?.username];
@@ -105,6 +104,13 @@ export class ChatRoomService {
                 const myParticipant = room.participants.find(p => p.userId === userId);
                 const lastReadAt = myParticipant?.lastReadAt || new Date(0);
 
+                let displayName = room.name;
+                if (!room.isGroupChat) {
+                    const otherParticipant = room.participants.find(p => p.user.id !== userId);
+                    if (otherParticipant) {
+                        displayName = otherParticipant.user.username;
+                    }
+                }
                 const unreadCount = await this.dataSource.getRepository('Message').count({
                     where: {
                         roomId: room.id,
@@ -115,6 +121,7 @@ export class ChatRoomService {
 
                 return {
                     ...room,
+                    name: displayName,
                     unreadCount,
                 };
             })

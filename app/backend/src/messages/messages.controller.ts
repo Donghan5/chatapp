@@ -20,13 +20,6 @@ export class MessageController {
 		return this.messageService.createMessage(createMessageDto);
 	}
 
-	// added to Message persistence
-	@EventPattern('chat.message.create')
-	async handleMessageCreate(@Payload() payload: { content: string, roomId: number, senderId: number }) {
-		console.log('Received message from Kafka:', payload);
-		await this.messageService.saveMessage(payload.content, payload.roomId, payload.senderId);
-	}
-
 	@Get('search')
 	searchMessages(
 		@Request() req,

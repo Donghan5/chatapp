@@ -43,9 +43,10 @@ export const SideBar = ({
       return room.name;
     }
     // For DM chats, show the other participant's name
-    const otherParticipant = room.participants?.find(p => p.user.id !== String(currentUserId));
-    return otherParticipant?.user.name || otherParticipant?.user.email?.split('@')[0] || room.name;
+    const otherParticipant = room.participants?.find(p => Number(p.user.id) !== currentUserId);
+    return otherParticipant?.user.username || otherParticipant?.user.email?.split('@')[0] || room.name;
   };
+
   useOutsideClick(menuRef, () => {
     if (isMenuOpen) setIsMenuOpen(false);
   });
@@ -200,7 +201,7 @@ export const SideBar = ({
       <CreateChatModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={onCreateRoom}
+        onCreate={onCreateRoom ?? (() => {})}
       />
     </aside>
   );
