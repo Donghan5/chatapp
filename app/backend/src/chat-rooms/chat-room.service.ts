@@ -37,16 +37,16 @@ export class ChatRoomService {
             const manager = queryRunner.manager;
 
             let roomName = createChatRoomDto.name;
-            if (!roomName) {
+            if (!createChatRoomDto.isGroup && !roomName) {
+                roomName = '';
+            } else if (!roomName) {
                 const creator = await manager.findOne(User, { where: { id: creatorId } });
-                const names = [creator?.username];
-
+                const names = [creator?.username || creator?.email?.split('@')[0]];
                 if (createChatRoomDto.inviteUserIds?.length) {
                     const invitedUsers = await manager.find(User, { where: { id: In(createChatRoomDto.inviteUserIds) } });
-                    names.push(...invitedUsers.map(u => u.username));
+                    names.push(...invitedUsers.map(u => u.username || u.email?.split('@')[0]));
                 }
-
-                roomName = names.filter(n => n).join(', ');
+                roomName = names.filter(n => n).join(', ') || 'New Chat';
             }
 
             const newRoom = manager.create(ChatRoom, {
@@ -93,8 +93,15 @@ export class ChatRoomService {
     }
 
     async getMyChatRooms(userId: number): Promise<ChatRoom[]> {
+        const myRoomIds = await this.roomParticipantRepository.find({
+            where: { userId },
+            select: ['roomId'],
+        });
+
+        if (myRoomIds.length === 0) return [];
+
         const rooms = await this.chatRoomRepository.find({
-            where: { participants: { user: { id: userId } } },
+            where: { id: In(myRoomIds.map(r => r.roomId)) },
             relations: ['participants', 'participants.user', 'createdBy'],
             order: { lastMessageAt: 'DESC' },
         });
@@ -106,11 +113,25 @@ export class ChatRoomService {
 
                 let displayName = room.name;
                 if (!room.isGroupChat) {
+                    console.log('[getMyChatRooms] userId:', userId, 'type:', typeof userId);
+                    console.log('[getMyChatRooms] participants:', JSON.stringify(room.participants.map(p => ({
+                        userId: p.userId,
+                        userIdFromUser: p.user?.id,
+                        userIdType: typeof p.user?.id
+                    }))));
+
                     const otherParticipant = room.participants.find(p => p.user.id !== userId);
+                    console.log('[getMyChatRooms] otherParticipant:', JSON.stringify(otherParticipant));
+                    console.log('[getMyChatRooms] username:', otherParticipant?.user?.username);
+                    console.log('[getMyChatRooms] email:', otherParticipant?.user?.email);
                     if (otherParticipant) {
-                        displayName = otherParticipant.user.username;
+                        displayName = otherParticipant.user.username 
+                            || otherParticipant.user.email?.split('@')[0] 
+                            || room.name 
+                            || 'Unknown';
                     }
                 }
+                console.log('[getMyChatRooms] Final displayName:', displayName);
                 const unreadCount = await this.dataSource.getRepository('Message').count({
                     where: {
                         roomId: room.id,
@@ -130,13 +151,23 @@ export class ChatRoomService {
         return roomsWithUnread as unknown as ChatRoom[];
     }
 
-    async getChatRoomById(roomId: number): Promise<ChatRoom> {
+    async getChatRoomById(roomId: number, requesterId?: number): Promise<ChatRoom> {
         const room = await this.chatRoomRepository.findOne({
             where: { id: roomId },
-            relations: ['participants', 'createdBy'],
+            relations: ['participants', 'participants.user', 'createdBy'],
         });
 
         if (!room) throw new NotFoundException('Chat room not found');
+        
+        if (!room.isGroupChat && requesterId) {
+        const otherParticipant = room.participants.find(p => p.user.id !== requesterId);
+        if (otherParticipant) {
+            room.name = otherParticipant.user.username 
+                || otherParticipant.user.email?.split('@')[0] 
+                || room.name 
+                || 'Unknown';
+        }
+    }
         return room;
     }
 
@@ -237,7 +268,7 @@ export class ChatRoomService {
             .where('room.isGroupChat = :isGroup', { isGroup: false })
             .getOne();
         if (existingRoom) {
-            return this.getChatRoomById(existingRoom.id);
+            return this.getChatRoomById(existingRoom.id, userId1);
         }
         // 2. Create new DM room
         const [user1, user2] = await Promise.all([

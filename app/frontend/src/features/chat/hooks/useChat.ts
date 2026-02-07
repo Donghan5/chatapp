@@ -72,10 +72,10 @@ export const useChat = () => {
         setActiveRoomId(roomId);
         setIsLoading(true);
 
-        socket.emit("joinRoom", roomId);
+        socket.emit("joinRoom", Number(roomId));
 
         try {
-            const msgs = await chatApi.getMessages(roomId);
+            const msgs = await chatApi.getMessages((roomId));
             setMessages(Array.isArray(msgs) ? msgs : []);
         } catch (error) {
             console.error(error);
@@ -109,7 +109,7 @@ export const useChat = () => {
         if (!activeRoomId) return;
 
         socket.emit("sendMessage", {
-            roomId: activeRoomId,
+            roomId: Number(activeRoomId),
             content: text,
         });
     };

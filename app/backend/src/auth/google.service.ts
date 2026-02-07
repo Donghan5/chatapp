@@ -16,6 +16,10 @@ export class GoogleService {
 		});
 
 		if (user && user.provider === 'google') {
+			if (!user.username) {
+				user.username = details.firstName + details.lastName;
+				await this.usersRepository.save(user);
+			}
 			return user;
 		}
 

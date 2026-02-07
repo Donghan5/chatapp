@@ -33,19 +33,19 @@ export const SideBar = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState("");
   const { isUserOnline } = usePresence();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   const getRoomDisplayName = (room: ChatRoom, currentUserId: number): string => {
-    if (room.isGroup) {
-      return room.name;
-    }
-    // For DM chats, show the other participant's name
-    const otherParticipant = room.participants?.find(p => Number(p.user.id) !== currentUserId);
-    return otherParticipant?.user.username || otherParticipant?.user.email?.split('@')[0] || room.name;
+    return room.name;
   };
+
+
+  const filteredRooms = rooms.filter((room) =>
+    room.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
+  );
 
   useOutsideClick(menuRef, () => {
     if (isMenuOpen) setIsMenuOpen(false);
@@ -138,13 +138,14 @@ export const SideBar = ({
           variant="filled"
           placeholder={viewMode === "chats" ? "Search Chat" : "Search Friend"}
           className="text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">  
         {viewMode === "chats" ? (
-          rooms.length > 0 ? (
-            rooms.map((room) => (
+          filteredRooms.length > 0 ? (
+            filteredRooms.map((room) => (
               <div
                 key={room.id}
                 onClick={() => onSelectRoom(room.id)}
