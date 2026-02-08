@@ -18,9 +18,10 @@ export default function ChatPage({ user }: { user: User }) {
         sendMessage, 
         isLoading, 
         createRoom,
-        loadMessages
-    } =
-        useChat();
+        loadMessages,
+        loadMoreMessages,
+        hasMore
+    } = useChat();
 
     const { logout } = useAuth(); // Get logout function
 
@@ -169,8 +170,17 @@ export default function ChatPage({ user }: { user: User }) {
                                 <button onClick={() => setSearchResults([])} className="text-xs text-gray-500">Clear</button>
                             </div>
                         )}
-
                         <section className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 z-10">
+                            {hasMore && (
+                                <div className="flex justify-center mb-4">
+                                    <button
+                                        onClick={loadMoreMessages}
+                                        className="px-4 py-2 rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                                    >
+                                        Load More
+                                    </button>
+                                </div>
+                            )}
                             {messages.map((msg, index) => {
                                 const isMe = Number(msg.senderId) === Number(user.id);
                                 return (

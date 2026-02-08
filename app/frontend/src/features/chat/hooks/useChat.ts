@@ -9,6 +9,7 @@ export const useChat = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [typingUsers, setTypingUsers] = useState<Map<number, string>>(new Map());
+    const [nextCursor, setNextCursor] = useState<number | null>(null);
 
     useEffect(() => {
         initSocketAuth();
@@ -71,14 +72,16 @@ export const useChat = () => {
     const selectRoom = async (roomId: string) => {
         setActiveRoomId(roomId);
         setIsLoading(true);
-
         socket.emit("joinRoom", Number(roomId));
 
         try {
-            const msgs = await chatApi.getMessages((roomId));
-            setMessages(Array.isArray(msgs) ? msgs : []);
+            console.log("[selectRoom] Calling getMessages for roomId:", roomId);
+            const response = await chatApi.getMessages(roomId);
+            console.log("[selectRoom] Received messages:", response.data.length);
+            setMessages(response.data || []);
+            setNextCursor(response.nextCursor);
         } catch (error) {
-            console.error(error);
+            console.error("[selectRoom] Error:", error);
             setMessages([]);
         } finally {
             setIsLoading(false);
@@ -87,11 +90,25 @@ export const useChat = () => {
 
     const loadMessages = async (roomId: string) => {
         try {
-            const data = await chatApi.getMessages(roomId);
-            setMessages(Array.isArray(data) ? data : []);
+            const response = await chatApi.getMessages(roomId);
+            setMessages(response.data || []);
+            setNextCursor(response.nextCursor);
         } catch (error) {
             console.error("Failed to load messages", error);
             setMessages([]);
+        }
+    };
+
+    const loadMoreMessages = async () => {
+        if (!activeRoomId || !nextCursor) return;
+
+        try {
+            const response = await chatApi.getMessages(activeRoomId, nextCursor);
+            
+            setMessages((prev) => [...response.data, ...prev]);
+            setNextCursor(response.nextCursor);
+        } catch (error) {
+            console.error("Failed to load more messages", error);
         }
     };
 
@@ -200,6 +217,8 @@ export const useChat = () => {
         isLoading, 
         createRoom, 
         loadMessages, 
+        loadMoreMessages,
+        hasMore: !nextCursor,
         sendTyping, 
         typingUsers,
         markMessageAsRead 

@@ -11,8 +11,16 @@ export class MessageController {
 	constructor(private readonly messageService: MessageService) { }
 
 	@Get()
-	async getMessagesByRoom(@Query('roomId') roomId: number, @Query('cursor') cursor: number | undefined, @Query('limit') limit: number) {
-		return this.messageService.getMessagesByRoom(roomId, cursor, limit);
+	async getMessagesByRoom(
+		@Query('roomId', ParseIntPipe) roomId: number,  
+		@Query('cursor') cursor: number | undefined, 
+		@Query('limit') limit?: string    
+	) {
+		const numericLimit = limit  ? parseInt(limit, 10) : 20;
+		console.log('[getMessagesByRoom] Called with roomId:', roomId, 'limit:', numericLimit);
+		const result = await this.messageService.getMessagesByRoom(roomId, cursor, numericLimit);
+		console.log('[getMessagesByRoom] Returning', result.data.length, 'messages');
+		return result;
 	}
 
 	@Post()

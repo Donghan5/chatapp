@@ -8,11 +8,6 @@ export const chatApi = {
         return response.data;
     },
 
-    getMessages: async (roomId: string): Promise<Message[]> => {
-        const response = await client.get<Message[]>(`/messages?roomId=${roomId}`);
-        return response.data;
-    },
-
     sendMessages: async (data: SendMessageRequest): Promise<Message> => {
         const response = await client.post<Message>("/messages", data);
         return response.data;
@@ -104,4 +99,13 @@ export const chatApi = {
     addReaction: async (messageId: string, emoji: string): Promise<void> => {
         await client.post(`/messages/${messageId}/reactions`, { emoji });
     },
+
+    getMessages: async (roomId: string, cursor?: number): Promise<{ data: Message[]; nextCursor: number | null }> => {
+        const url = cursor
+            ? `/messages?roomId=${roomId}&cursor=${cursor}&limit=20`
+            : `/messages?roomId=${roomId}&limit=20`;
+
+        const response = await client.get<{ data: Message[]; nextCursor: number | null }>(url);
+        return response.data;
+    }
 };
