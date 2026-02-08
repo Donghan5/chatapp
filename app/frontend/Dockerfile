@@ -6,8 +6,13 @@ COPY tsconfig.base.json ./
 
 COPY packages ./packages
 
-# RUN npm install
-COPY node_modules ./node_modules
+RUN npm install
+
+####################################
+# TESTING, if not working use this #
+# Before, make sure of npm install #
+####################################
+# COPY node_modules ./node_modules
 
 COPY app/frontend ./app/frontend
 
