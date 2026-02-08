@@ -89,12 +89,11 @@ Build the container images:
 make build
 ```
 
-#### Kubernetes Deployment
-Deploy the application to your local K8s cluster:
+#### Deployment
+You can deploy the application to your local K8s cluster:
 
 ```bash
-make k8s-config  # Apply ConfigMaps and Secrets
-make k8s-deploy  # Apply Deployments and Services
+make all
 ```
 
 To clean up:
@@ -110,11 +109,10 @@ make clean
 - **Infrastructure**: Dockerfiles created for both services. Makefile and K8s manifests ready for local deployment.
 - **Dependencies**: Key libraries installed (pg, kafkajs, fastify, react-oauth/google).
 
-## 🗺️ Roadmap (MVP Milestones)
+## Future Plans
 
-Backend MVP
- - created 80% of the backend
- - Have to modify tests
+- Finish Friends add features in backend/frontend
+- AI integration
 
 ## DataBase diagram
 
